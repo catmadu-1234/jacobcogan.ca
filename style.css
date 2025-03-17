@@ -302,6 +302,17 @@ header {
     word-wrap: break-word;
 }
 
+.left-column h2 {
+    margin: 16px 0;
+    font-size: 30px;
+    font-family: Anton, sans-serif;
+    font-weight: 400;
+    line-height: 40px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: #333;
+}
+
 .right-column {
     flex: 1;
     position: relative;
@@ -385,9 +396,9 @@ header {
 
     .vibe-link {
         font-size: 20px;
-        line-height: 23px;
+        line-height: 24px;
         padding: 10px;
-        -webkit-text-stroke: 1px black;
+        -webkit-text-stroke: none;
     }
 
     .vibe-link.left {
@@ -404,5 +415,15 @@ header {
 
     .left-column, .right-column {
         height: 50vh;
+    }
+
+    .left-column h1,
+    .left-column h2,
+    .left-column a,
+    .left-column p {
+        font-size: 20px; /* Use body-small-bold size */
+        font-family: "Apfel Grotezk", sans-serif;
+        font-weight: 700;
+        line-height: 24px;
     }
 }
