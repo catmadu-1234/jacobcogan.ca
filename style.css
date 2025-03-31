@@ -1,3 +1,53 @@
+/* Custom fonts */
+@font-face {
+    font-family: 'NectoMono-Regular';
+    src: url('/fonts/NectoMono-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Anton-Regular';
+    src: url('/fonts/Anton-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'ApfelGrotezk-Regular';
+    src: url('/fonts/ApfelGrotezk-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'ApfelGrotezk-Fett';
+    src: url('/fonts/ApfelGrotezk-Fett.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'ApfelGrotezk-Mittel';
+    src: url('/fonts/ApfelGrotezk-Mittel.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'ApfelGrotezk-Satt';
+    src: url('/fonts/ApfelGrotezk-Satt.otf') format('opentype');
+    font-weight: 800;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'ApfelGrotezk-Brukt';
+    src: url('/fonts/ApfelGrotezk-Brukt.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
 /* Global Styles */
 body {
     font-family: Arial, sans-serif;
@@ -23,16 +73,14 @@ header {
 /* Typography Styles */
 .text-display-big {
     font-size: 220px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
+    font-family: "Anton-Regular", sans-serif;
     line-height: 221.84px;
     letter-spacing: -0.04em;
 }
 
 .text-display {
     font-size: 118px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
+    font-family: "Anton-Regular", sans-serif;
     line-height: 141.6px;
     letter-spacing: -0.03em;
     text-transform: uppercase;
@@ -40,8 +88,7 @@ header {
 
 .text-h1 {
     font-size: 40px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
+    font-family: "Anton-Regular", sans-serif;
     line-height: 46px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -49,23 +96,20 @@ header {
 
 .text-h2 {
     font-size: 30px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
+    font-family: "Anton-Regular", sans-serif;
     line-height: 40px;
 }
 
 .text-h3 {
     font-size: 24px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
+    font-family: "Anton-Regular", sans-serif;
     line-height: 32px;
     text-transform: uppercase;
 }
 
 .text-h4 {
     font-size: 18px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
+    font-family: "Anton-Regular", sans-serif;
     line-height: 28px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
@@ -73,48 +117,41 @@ header {
 
 .text-h5 {
     font-size: 16px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
+    font-family: "Anton-Regular", sans-serif;
     line-height: 24px;
 }
 
 /* Body Text */
 .text-body-regular {
     font-size: 24px;
-    font-family: "Apfel Grotezk", sans-serif;
-    font-weight: 400;
+    font-family: "Apfel Grotezk-Regular", sans-serif;
 }
 
 .text-body-bold {
     font-size: 24px;
-    font-family: "Apfel Grotezk", sans-serif;
-    font-weight: 700;
+    font-family: "Apfel Grotezk-Fett", sans-serif;
 }
 
 .text-body-small {
     font-size: 20px;
-    font-family: "Apfel Grotezk", sans-serif;
-    font-weight: 400;
+    font-family: "Apfel Grotezk-Regular", sans-serif;
 }
 
 .text-body-small-bold {
     font-size: 20px;
-    font-family: "Apfel Grotezk", sans-serif;
-    font-weight: 700;
+    font-family: "Apfel Grotezk-Fett", sans-serif;
 }
 
 /* Footnotes */
 .text-footnote {
     font-size: 12px;
-    font-family: "Apfel Grotezk", sans-serif;
-    font-weight: 400;
+    font-family: "Apfel Grotezk-Regular", sans-serif;
     line-height: 20px;
 }
 
 .text-footnote-bold {
     font-size: 12px;
-    font-family: "Apfel Grotezk", sans-serif;
-    font-weight: 700;
+    font-family: "Apfel Grotezk-Fett", sans-serif;
     line-height: 20px;
 }
 
@@ -213,12 +250,19 @@ header {
     height: 100vh;
 }
 
-.left-column {
-    flex: 1;
-    background-color: #ffffff;
+.left-column,
+.right-column {
+    flex: 1 1 50%; /* Ensure both columns take up 50% of the screen */
+    max-width: 50%; /* Prevent columns from exceeding 50% */
+    height: 100%; /* Ensure full height */
+    overflow: hidden; /* Prevent overflow */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+.left-column {
+    background-color: #ffffff;
     padding: 24px;
     text-align: left;
 }
@@ -280,20 +324,13 @@ header {
 
 .left-column h1 {
     margin: 0;
+    font-size: 40px;
     font-family: Anton, sans-serif;
     font-weight: 400;
-    letter-spacing: -0.03em;
+    line-height: 46px;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     text-align: left;
-    line-height: 0.9; /* Reduce line height for better spacing */
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    white-space: nowrap;
-    font-size: calc(20vw); /* Double the font size */
-    max-width: 100%; /* Ensure it doesn't overflow the column */
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .left-column h1 span {
@@ -314,7 +351,6 @@ header {
 }
 
 .right-column {
-    flex: 1;
     position: relative;
     overflow: hidden;
     display: flex;
@@ -413,8 +449,11 @@ header {
         flex-direction: column;
     }
 
-    .left-column, .right-column {
-        height: 50vh;
+    .left-column,
+    .right-column {
+        flex: none;
+        max-width: 100%; /* Allow full width on smaller screens */
+        height: 50vh; /* Adjust height for stacked layout */
     }
 
     .left-column h1,
