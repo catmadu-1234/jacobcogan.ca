@@ -1,468 +1,147 @@
-/* Custom fonts */
-@font-face {
-    font-family: 'NectoMono-Regular';
-    src: url('/fonts/NectoMono-Regular.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@font-face {
-    font-family: 'Anton-Regular';
-    src: url('/fonts/Anton-Regular.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'ApfelGrotezk-Regular';
-    src: url('/fonts/ApfelGrotezk-Regular.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'ApfelGrotezk-Fett';
-    src: url('/fonts/ApfelGrotezk-Fett.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'ApfelGrotezk-Mittel';
-    src: url('/fonts/ApfelGrotezk-Mittel.otf') format('opentype');
-    font-weight: 500;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'ApfelGrotezk-Satt';
-    src: url('/fonts/ApfelGrotezk-Satt.otf') format('opentype');
-    font-weight: 800;
-    font-style: normal;
-  }
-  
-  @font-face {
-    font-family: 'ApfelGrotezk-Brukt';
-    src: url('/fonts/ApfelGrotezk-Brukt.otf') format('opentype');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-/* Global Styles */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* Header */
-header {
-    background-color: #222;
-    color: white;
-    padding: 20px;
-}
-
-/* Typography Styles */
-.text-display-big {
-    font-size: 220px;
-    font-family: "Anton-Regular", sans-serif;
-    line-height: 221.84px;
-    letter-spacing: -0.04em;
-}
-
-.text-display {
-    font-size: 118px;
-    font-family: "Anton-Regular", sans-serif;
-    line-height: 141.6px;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-}
-
-.text-h1 {
-    font-size: 40px;
-    font-family: "Anton-Regular", sans-serif;
-    line-height: 46px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-}
-
-.text-h2 {
-    font-size: 30px;
-    font-family: "Anton-Regular", sans-serif;
-    line-height: 40px;
-}
-
-.text-h3 {
-    font-size: 24px;
-    font-family: "Anton-Regular", sans-serif;
-    line-height: 32px;
-    text-transform: uppercase;
-}
-
-.text-h4 {
-    font-size: 18px;
-    font-family: "Anton-Regular", sans-serif;
-    line-height: 28px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-}
-
-.text-h5 {
-    font-size: 16px;
-    font-family: "Anton-Regular", sans-serif;
-    line-height: 24px;
-}
-
-/* Body Text */
-.text-body-regular {
-    font-size: 24px;
-    font-family: "Apfel Grotezk-Regular", sans-serif;
-}
-
-.text-body-bold {
-    font-size: 24px;
-    font-family: "Apfel Grotezk-Fett", sans-serif;
-}
-
-.text-body-small {
-    font-size: 20px;
-    font-family: "Apfel Grotezk-Regular", sans-serif;
-}
-
-.text-body-small-bold {
-    font-size: 20px;
-    font-family: "Apfel Grotezk-Fett", sans-serif;
-}
-
-/* Footnotes */
-.text-footnote {
-    font-size: 12px;
-    font-family: "Apfel Grotezk-Regular", sans-serif;
-    line-height: 20px;
-}
-
-.text-footnote-bold {
-    font-size: 12px;
-    font-family: "Apfel Grotezk-Fett", sans-serif;
-    line-height: 20px;
-}
-
-/* Cool Mono Text */
-.text-body-cool {
-    font-size: 12px;
-    font-family: "Necto Mono", monospace;
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-}
-
-header {
-    background-color: #222;
-    color: white;
-    padding: 20px;
-}
-
-.hero {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.hero img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
-.centered-text {
-    position: relative;
-    color: white;
-    font-size: 118px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
-    line-height: 141.6px;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-    text-align: center;
-    -webkit-text-stroke: 2px black;
-    z-index: 2;
-}
-
-.vibe-link {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    color: white;
-    font-size: 40px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
-    line-height: 46px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    text-align: center;
-    -webkit-text-stroke: 2px black;
-    text-decoration: none;
-    padding: 20px;
-    z-index: 2;
-    overflow: hidden;
-}
-
-.vibe-link::after {
-    content: '';
-    display: block;
-    width: 0;
-    height: 2px;
-    background: white;
-    transition: width 0.3s ease;
-}
-
-.vibe-link:hover::after {
-    width: 100%;
-}
-
-.vibe-link.left {
-    left: 20px;
-}
-
-.vibe-link.right {
-    right: 20px;
-}
-
-.container {
-    display: flex;
-    width: 100%;
-    height: 100vh;
-}
-
-.left-column,
-.right-column {
-    flex: 1 1 50%; /* Ensure both columns take up 50% of the screen */
-    max-width: 50%; /* Prevent columns from exceeding 50% */
-    height: 100%; /* Ensure full height */
-    overflow: hidden; /* Prevent overflow */
+.website {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-}
-
-.left-column {
+    min-height: 100vh;
+    align-items: flex-start;
+    padding: 36px;
+    position: relative;
     background-color: #ffffff;
-    padding: 24px;
-    text-align: left;
-}
-
-.left-column .top-text {
+  }
+  
+  .website .frame {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.left-column .bottom-text {
-    text-align: left;
-}
-
-.left-column h1,
-.left-column a,
-.left-column p {
-    margin: 0;
-    font-size: 118px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
-    line-height: 141.6px;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-}
-
-.left-column a {
-    text-decoration: none;
-    color: #333;
-    transition: color 0.3s ease;
-}
-
-.left-column a:hover {
-    color: #000;
-}
-
-.left-column .bottom-link {
-    align-self: flex-start;
-    margin-top: auto;
-    text-decoration: underline;
-    text-decoration-color: transparent; /* Prevent underlining the arrow */
-    color: #6D46CC;
-    font-size: 118px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
-    line-height: 141.6px;
-    letter-spacing: -0.03em;
-    text-transform: uppercase;
-    transition: color 0.3s ease;
-}
-
-.left-column .bottom-link:hover {
-    color: #4A2E99;
-}
-
-.left-column .arrow {
-    text-decoration: none; /* Ensure the arrow is not underlined */
-}
-
-.left-column h1 {
-    margin: 0;
-    font-size: 40px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
-    line-height: 46px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    text-align: left;
-}
-
-.left-column h1 span {
-    display: block;
-    font-size: inherit; /* Scale proportionately */
-    word-wrap: break-word;
-}
-
-.left-column h2 {
-    margin: 16px 0;
-    font-size: 30px;
-    font-family: Anton, sans-serif;
-    font-weight: 400;
-    line-height: 40px;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #333;
-}
-
-.right-column {
+    align-items: flex-end;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
     position: relative;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.carousel {
+    align-self: stretch;
+    width: 100%;
+    flex: 0 0 auto;
+  }
+  
+  .website .text-wrapper {
     position: relative;
+    width: fit-content;
+    margin-top: -1.00px;
+    font-family: var(--BODY-1-font-family);
+    font-weight: var(--BODY-1-font-weight);
+    color: #000000;
+    font-size: var(--BODY-1-font-size);
+    letter-spacing: var(--BODY-1-letter-spacing);
+    line-height: var(--BODY-1-line-height);
+    white-space: nowrap;
+    font-style: var(--BODY-1-font-style);
+  }
+  
+  .website .div {
+    position: relative;
+    flex: 1;
+    align-self: stretch;
     width: 100%;
-    height: 100%;
+    flex-grow: 1;
+    background-color: #ffffff;
+  }
+  
+  .website .div-wrapper {
     display: flex;
+    align-items: flex-start;
     justify-content: center;
-    align-items: center;
-}
-
-.carousel-item {
-    display: none;
+    position: relative;
+    align-self: stretch;
     width: 100%;
-    height: 100%;
-}
-
-.carousel-item.active {
-    display: block;
-}
-
-.carousel img, .carousel video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.carousel img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    animation: trippy-effect 5s infinite alternate ease-in-out;
-    transition: transform 0.1s ease; /* Smooth transition for mouse movement */
-}
-
-.carousel-arrow {
-    position: absolute;
-    top: 50%; /* Center vertically */
-    transform: translateY(-50%); /* Adjust for centering */
-    width: 50px;
-    height: 50px;
-    background-color: white;
-    color: #6D46CC; /* Use the same purple for the arrow */
-    border: none;
-    font-size: 24px;
+    flex: 0 0 auto;
+  }
+  
+  .website .text-wrapper-2 {
+    position: relative;
+    width: fit-content;
+    margin-top: -1.00px;
+    font-family: var(--HUGE-font-family);
+    font-weight: var(--HUGE-font-weight);
+    color: #000000;
+    font-size: var(--HUGE-font-size);
+    letter-spacing: var(--HUGE-letter-spacing);
+    line-height: var(--HUGE-line-height);
+    white-space: nowrap;
+    font-style: var(--HUGE-font-style);
+  }
+  
+  .website .frame-2 {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    z-index: 2;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.carousel-arrow.left-arrow {
-    left: 0;
-}
-
-.carousel-arrow.right-arrow {
-    right: 0;
-}
-
-.carousel-arrow:hover {
-    background-color: #6D46CC; /* Use purple for hover */
+    align-items: flex-start;
+    position: relative;
+    align-self: stretch;
+    width: 100%;
+    flex: 0 0 auto;
+  }
+  
+  .website .p {
+    position: relative;
+    flex: 1;
+    margin-top: -1.00px;
+    font-family: var(--h2-font-family);
+    font-weight: var(--h2-font-weight);
+    color: #000000;
+    font-size: var(--h2-font-size);
+    text-align: center;
+    letter-spacing: var(--h2-letter-spacing);
+    line-height: var(--h2-line-height);
+    font-style: var(--h2-font-style);
+  }
+  
+  .website .frame-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    position: relative;
+    flex: 1;
+    align-self: stretch;
+    width: 100%;
+    flex-grow: 1;
+    background-color: #ffffff;
+  }
+  
+  .website .frame-3 {
+    display: flex;
+    align-items: flex-start;
+    padding: 76px 0px 0px;
+    position: relative;
+    flex: 1;
+    flex-grow: 1;
+  }
+  
+  .website .frame-4 {
+    display: flex;
+    align-items: flex-start;
+    padding: 0px 30px;
+    position: relative;
+    flex: 1;
+    flex-grow: 1;
+  }
+  
+  .website .text-wrapper-3 {
+    position: relative;
+    flex: 1;
+    margin-top: -1.00px;
+    font-family: var(--BODY-1-font-family);
+    font-weight: var(--BODY-1-font-weight);
+    color: #000000;
+    font-size: var(--BODY-1-font-size);
+    letter-spacing: var(--BODY-1-letter-spacing);
+    line-height: var(--BODY-1-line-height);
+    font-style: var(--BODY-1-font-style);
+  }
+  
+  a:hover {
+    background-color: black;
     color: white;
-}
+    transition: all 0.5s ease;
+    padding: 0px 0px; /* optional: gives the highlight some space */
+  }
 
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .centered-text {
-        font-size: 60px;
-        line-height: 70px;
-        -webkit-text-stroke: 2px black;
-    }
-
-    .vibe-link {
-        font-size: 20px;
-        line-height: 24px;
-        padding: 10px;
-        -webkit-text-stroke: none;
-    }
-
-    .vibe-link.left {
-        left: 10px;
-    }
-
-    .vibe-link.right {
-        right: 10px;
-    }
-
-    .container {
-        flex-direction: column;
-    }
-
-    .left-column,
-    .right-column {
-        flex: none;
-        max-width: 100%; /* Allow full width on smaller screens */
-        height: 50vh; /* Adjust height for stacked layout */
-    }
-
-    .left-column h1,
-    .left-column h2,
-    .left-column a,
-    .left-column p {
-        font-size: 20px; /* Use body-small-bold size */
-        font-family: "Apfel Grotezk", sans-serif;
-        font-weight: 700;
-        line-height: 24px;
-    }
-}
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
