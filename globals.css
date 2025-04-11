@@ -1,3 +1,28 @@
+/*///////////////////// HERE ARE MY FONTS /////////////////////*/
+
+/* Happy Times at the IKOB */
+@font-face {
+    font-family: 'Happy Times at the IKOB';
+    src: url('fonts/happy-times-at-the-ikob-webfont.woff2') format('woff2'),
+         url('fonts/happy-times-at-the-ikob-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  /* Necto Mono */
+  @font-face {
+    font-family: 'Necto Mono';
+    src: url('fonts/NectoMono-Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+
+
+
+
+/*///////////////////// HONESTLY, I DON'T KNOW WHAT THE SHIT UNDER HERE DOES /////////////////////*/
+
 @import url("https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css");
 * {
   -webkit-font-smoothing: antialiased;
