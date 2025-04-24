@@ -1,3 +1,13 @@
+/*///////////// BODY STYLES /////////////*/
+
+body {
+  background-color: var(--strong); /* Use the --strong variable for the background */
+  color: white; /* Set text color to white */
+  -webkit-font-smoothing: antialiased; /* Improves font rendering on WebKit browsers */
+  -moz-osx-font-smoothing: grayscale; /* Improves font rendering on macOS */
+}
+
+
 /*///////////// TYPOGRAPHY /////////////*/
 
 .typo-huge {
@@ -78,6 +88,8 @@
     justify-content: left;
     background-color: "0000ff";
     height: 100vh;
+    position: relative;
+    z-index: 1; /* Places the content above the video and mask */
   }
 
   @media (min-width: 768px) {
@@ -246,15 +258,42 @@
   }
 
   .link-section {
-    font-family: var(--BODY-2-font-family);
-    font-size: var(--BODY-2-font-size);
-    font-weight: var(--BODY-2-font-weight);
-    letter-spacing: var(--BODY-2-letter-spacing);
-    line-height: var(--BODY-2-line-height);
-    font-style: var(--BODY-2-font-style);
+    font-family: var(--h2-font-family);
+    font-size: var(--h2-font-size);
+    font-weight: var(--h2-font-weight);
+    letter-spacing: var(--h2-letter-spacing);
+    line-height: var(--h2-line-height);
+    font-style: var(--h2-font-style);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    justify-content: left;
+    align-items: left;
     width: fill;
   }
+
+/* Full-page video background */
+.video-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the video covers the entire screen */
+  z-index: -2; /* Places the video behind other content */
+}
+
+/* Halftone mask overlay */
+.halftone-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* 50% transparent black overlay */
+  /* background-image: url('/images/dots004 tiled.webp'); Halftone mask image */
+  background-size: cover; /* Ensures the mask covers the entire screen */
+  background-blend-mode: multiply; /* Blends the mask with the semi-transparent background */
+  z-index: -1; /* Places the mask above the video but behind the content */
+ 
+
+}
