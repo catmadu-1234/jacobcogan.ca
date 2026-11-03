@@ -99,3 +99,16 @@ export async function findOrphans(db: D1Database, olderThanIso: string): Promise
     .all<MediaRow>();
   return results.map(rowToMedia);
 }
+
+/** All ready media of a site's live works in one query, for building cover thumbnails without N+1 lookups. */
+export async function listReadyMediaForSite(db: D1Database, siteId: number): Promise<Media[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT m.* FROM media m JOIN works w ON w.id = m.work_id
+       WHERE m.site_id = ? AND m.status = 'ready' AND w.deleted_at IS NULL
+       ORDER BY m.work_id, m.sort, m.id`,
+    )
+    .bind(siteId)
+    .all<MediaRow>();
+  return results.map(rowToMedia);
+}

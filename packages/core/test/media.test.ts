@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import {
   createMedia, getMedia, listMediaForWork, updateMedia, reorderMedia, deleteMedia,
-  mediaKeys, findOrphans, createWork, updateWork, softDeleteWork, getWork,
+  mediaKeys, findOrphans, createWork, updateWork, softDeleteWork, getWork, listReadyMediaForSite,
 } from "../src";
 import { seedTwoSites, addWork } from "./fixtures";
 
@@ -92,5 +92,15 @@ describe("media", () => {
       await db().prepare("UPDATE media SET created_at = '2026-01-01T00:00:00.000Z' WHERE id = ?").bind(m!.id).run();
       expect(await findOrphans(db(), "2026-06-01T00:00:00.000Z")).toEqual([]);
     });
+  });
+
+  it("lists ready media of live works for one site, in work then sort order", async () => {
+    const { a, b } = await seedTwoSites(db());
+    const one = await addWork(db(), a, { title: "One", media: [{}, { ready: false }, {}] });
+    const gone = await addWork(db(), a, { title: "Gone" });
+    await softDeleteWork(db(), a, gone.work.id);
+    await addWork(db(), b, { title: "Other site" });
+    const ids = (await listReadyMediaForSite(db(), a)).map((m) => m.id);
+    expect(ids).toEqual([one.media[0]!.id, one.media[2]!.id]);
   });
 });

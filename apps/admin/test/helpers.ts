@@ -41,3 +41,14 @@ export async function seedTwoSites(): Promise<{ a: number; b: number }> {
   await env.DB.batch([insertUser.bind("a@test.dev", a), insertUser.bind("b@test.dev", b)]);
   return { a, b };
 }
+
+/** Authenticated JSON call to the admin API as `email`. */
+export async function call(email: string, method: string, path: string, body?: unknown, rawBody?: string): Promise<Response> {
+  const headers: Record<string, string> = { ...(await authed(email)) };
+  if (body !== undefined || rawBody !== undefined) headers["content-type"] = "application/json";
+  return request(path, { method, headers, body: rawBody ?? (body === undefined ? undefined : JSON.stringify(body)) });
+}
+
+export async function contentVersion(email: string): Promise<number> {
+  return ((await (await call(email, "GET", "/api/me")).json()) as any).site.contentVersion;
+}
