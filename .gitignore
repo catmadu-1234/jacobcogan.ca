@@ -1,0 +1,8 @@
+.claude-octopus/
+.octo/
+node_modules/
+.wrangler/
+dist/
+.dev.vars
+.superpowers/
+.astro/
