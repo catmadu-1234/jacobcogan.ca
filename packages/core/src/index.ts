@@ -7,3 +7,4 @@ export * from "./db/works";
 export * from "./db/media";
 export * from "./db/tags";
 export * from "./public";
+export * from "./range";

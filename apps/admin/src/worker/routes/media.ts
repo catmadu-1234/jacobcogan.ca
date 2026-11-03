@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import {
   IdList, MAX_UPLOAD_BYTES, MediaCreate, MediaPatch, createMedia, deleteMedia, getMedia, getWork,
-  markMediaReady, mediaKeys, reorderMedia, updateMedia, type MediaVariant,
+  markMediaReady, mediaKeys, parseRange, reorderMedia, updateMedia, type MediaVariant,
 } from "@senka/core";
 import type { AppEnv } from "../env";
 import { notFound, parseId, readJson } from "../http";
@@ -86,4 +86,41 @@ mediaRoutes.delete("/media/:id", async (c) => {
   if (!keys) return notFound(c);
   await c.env.MEDIA.delete(keys);
   return c.body(null, 204);
+});
+
+/**
+ * Owner-only preview of any of the site's files, including hidden works and uploads still in progress
+ * (the public site only serves visible, ready media). Supports byte ranges so videos can seek.
+ */
+mediaRoutes.get("/media/:id/file/:variant", async (c) => {
+  const id = parseId(c.req.param("id"));
+  const media = id === null ? null : await getMedia(c.env.DB, c.get("siteId"), id);
+  const variant = c.req.param("variant");
+  if (!media || !VARIANTS.has(variant) || !media.variants.includes(variant as MediaVariant)) return notFound(c);
+
+  const key = `${media.siteId}/${media.id}/${variant}`;
+  const head = await c.env.MEDIA.head(key);
+  if (!head) return notFound(c);
+
+  const range = parseRange(c.req.header("range") ?? null, head.size);
+  if (range === "invalid") {
+    return new Response(null, { status: 416, headers: { "Content-Range": `bytes */${head.size}` } });
+  }
+  const object = await c.env.MEDIA.get(key, range ? { range } : undefined);
+  if (!object) return notFound(c);
+
+  const headers = new Headers({
+    "Content-Type": head.httpMetadata?.contentType ?? "application/octet-stream",
+    "Accept-Ranges": "bytes",
+    "Cache-Control": "private, max-age=31536000, immutable",
+    "X-Content-Type-Options": "nosniff",
+    ETag: head.httpEtag,
+  });
+  if (range) {
+    headers.set("Content-Range", `bytes ${range.offset}-${range.offset + range.length - 1}/${head.size}`);
+    headers.set("Content-Length", String(range.length));
+  } else {
+    headers.set("Content-Length", String(head.size));
+  }
+  return new Response(object.body, { status: range ? 206 : 200, headers });
 });
