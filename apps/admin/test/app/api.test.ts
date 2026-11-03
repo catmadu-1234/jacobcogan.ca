@@ -24,7 +24,7 @@ describe("api", () => {
 
   it("throws ApiError carrying status and body", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(409, { error: "conflict" })));
-    const err = await api("PATCH", "/api/works/1", {}).catch((e) => e);
+    const err = (await api("PATCH", "/api/works/1", {}).catch((e: unknown) => e)) as ApiError;
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(409);
     expect(err.body.error).toBe("conflict");
@@ -34,7 +34,7 @@ describe("api", () => {
     const handler = vi.fn();
     setUnauthenticatedHandler(handler);
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(401, { error: "unauthenticated" })));
-    const err = await api("GET", "/api/me").catch((e) => e);
+    const err = (await api("GET", "/api/me").catch((e: unknown) => e)) as ApiError;
     expect(handler).toHaveBeenCalledOnce();
     expect(err.status).toBe(401);
   });

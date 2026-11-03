@@ -1,0 +1,52 @@
+:root {
+  --wall: #fafaf8; /* warm off-white, a gallery wall rather than screen white */
+  --paper: #ffffff; /* raised surfaces (cards, inputs) */
+  --ink: #141414; /* 17.4:1 on --wall */
+  --muted: #6b6b66; /* 5.3:1 on --wall, AA for small text */
+  --hair: #e6e6e1; /* 1px dividers */
+  --accent: #141414; /* focus / hover / active only */
+  --danger: #b3261e;
+  --ok: #2e6b47;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 80px;
+  --space-9: 128px;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 1rem; /* admin body and ALL inputs (stops iOS zoom) */
+  --text-lg: 1.25rem;
+  --text-xl: clamp(1.5rem, 1.1rem + 1.5vw, 2.25rem);
+
+  --radius: 6px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 180ms;
+  --focus: 0 0 0 2px var(--wall), 0 0 0 4px var(--accent);
+
+  --gutter: clamp(16px, 4vw, 48px);
+  --tabbar-h: calc(64px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0ms;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wall: #121211;
+    --paper: #1b1b1a;
+    --ink: #ededea;
+    --muted: #a3a39d;
+    --hair: #2a2a28;
+    --danger: #f2b8b5;
+    --ok: #8fd1a8;
+  }
+}
