@@ -4,3 +4,6 @@ export * from "./validate";
 export * from "./db/sites";
 export * from "./db/fields";
 export * from "./db/works";
+export * from "./db/media";
+export * from "./db/tags";
+export * from "./public";
