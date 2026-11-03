@@ -3,11 +3,12 @@ import { describe, it, expect } from "vitest";
 import {
   createMedia, getMedia, listMediaForWork, updateMedia, reorderMedia, deleteMedia,
   mediaKeys, findOrphans, createWork, updateWork, softDeleteWork, getWork, listReadyMediaForSite,
+  markMediaReady, findMediaOfDeletedWorks,
 } from "../src";
 import { seedTwoSites, addWork } from "./fixtures";
 
 const db = () => env.DB;
-const input = { kind: "image" as const, mime: "image/webp", width: 100, height: 50, bytes: 10, variants: ["original" as const, "w480" as const] };
+const input = { kind: "image" as const, mime: "image/webp" as const, width: 100, height: 50, bytes: 10, variants: ["original" as const, "w480" as const] };
 
 describe("media", () => {
   it("creates pending media with increasing sort", async () => {
@@ -102,5 +103,26 @@ describe("media", () => {
     await addWork(db(), b, { title: "Other site" });
     const ids = (await listReadyMediaForSite(db(), a)).map((m) => m.id);
     expect(ids).toEqual([one.media[0]!.id, one.media[2]!.id]);
+  });
+
+  it("marks media ready and records the real stored size", async () => {
+    const { a, b } = await seedTwoSites(db());
+    const w = await createWork(db(), a);
+    const m = (await createMedia(db(), a, w.id, input))!;
+    expect(await markMediaReady(db(), b, m.id, 999)).toBeNull();
+    const ready = (await markMediaReady(db(), a, m.id, 4321))!;
+    expect(ready).toMatchObject({ status: "ready", bytes: 4321 });
+  });
+
+  it("finds media of works soft-deleted before the cutoff only", async () => {
+    const { a } = await seedTwoSites(db());
+    const old = await addWork(db(), a, { title: "Old" });
+    const recent = await addWork(db(), a, { title: "Recent" });
+    await addWork(db(), a, { title: "Live" });
+    await softDeleteWork(db(), a, old.work.id);
+    await softDeleteWork(db(), a, recent.work.id);
+    await db().prepare("UPDATE works SET deleted_at = '2026-01-01T00:00:00.000Z' WHERE id = ?").bind(old.work.id).run();
+    const found = await findMediaOfDeletedWorks(db(), "2026-06-01T00:00:00.000Z");
+    expect(found.map((m) => m.id)).toEqual([old.media[0]!.id]);
   });
 });

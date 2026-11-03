@@ -33,3 +33,8 @@ export const DEFAULT_THEME: ThemeConfig = {
   preset: "grotesk", accent: "#141414", rowHeight: 320, showIndexCaptions: false,
 };
 export const MAX_UPLOAD_BYTES = 90 * 1024 * 1024;
+/** The only content types media may be stored and served as (never HTML, SVG or scripts). */
+export const ALLOWED_MIME = [
+  "image/jpeg", "image/png", "image/webp", "image/gif", "image/avif",
+  "video/mp4", "video/webm", "video/quicktime",
+] as const;

@@ -2,11 +2,15 @@ import { Hono } from "hono";
 import type { JWTVerifyGetKey } from "jose";
 import { bumpContentVersion, getSiteById, storageBytes } from "@senka/core";
 import { accessAuth } from "./auth";
+import { runCleanup } from "./cron";
 import type { AppEnv } from "./env";
 import { fieldRoutes } from "./routes/fields";
+import { mediaRoutes } from "./routes/media";
 import { siteRoutes } from "./routes/site";
 import { tagRoutes } from "./routes/tags";
 import { workRoutes } from "./routes/works";
+
+import type { Env } from "./env";
 
 export type { AppEnv, Env } from "./env";
 
@@ -29,6 +33,7 @@ export function createApp(opts: { getKey?: JWTVerifyGetKey } = {}) {
   api.route("/fields", fieldRoutes);
   api.route("/works", workRoutes);
   api.route("/tags", tagRoutes);
+  api.route("/", mediaRoutes);
 
   const app = new Hono<AppEnv>();
   app.route("/api", api);
@@ -43,4 +48,9 @@ export function createApp(opts: { getKey?: JWTVerifyGetKey } = {}) {
 
 const app = createApp();
 
-export default { fetch: app.fetch };
+export default {
+  fetch: app.fetch,
+  scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext) {
+    ctx.waitUntil(runCleanup(env));
+  },
+};

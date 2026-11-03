@@ -110,7 +110,7 @@ describe("works API", () => {
   it("lists works with a cover image, preferring the chosen cover", async () => {
     const { a } = await seedTwoSites();
     const w = await newWork();
-    const input = { kind: "image" as const, mime: "image/webp", width: 10, height: 10, bytes: 1, variants: ["original" as const] };
+    const input = { kind: "image" as const, mime: "image/webp" as const, width: 10, height: 10, bytes: 1, variants: ["original" as const] };
     const m1 = (await createMedia(env.DB, a, w.id, input))!;
     const m2 = (await createMedia(env.DB, a, w.id, input))!;
     await updateMedia(env.DB, a, m1.id, { status: "ready" });

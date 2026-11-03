@@ -112,3 +112,24 @@ export async function listReadyMediaForSite(db: D1Database, siteId: number): Pro
     .all<MediaRow>();
   return results.map(rowToMedia);
 }
+
+/** Marks an upload complete and records the size actually stored in R2 (not the client's claim). */
+export async function markMediaReady(db: D1Database, siteId: number, id: number, bytes: number): Promise<Media | null> {
+  const res = await db
+    .prepare("UPDATE media SET status = 'ready', bytes = ? WHERE id = ? AND site_id = ?")
+    .bind(bytes, id, siteId)
+    .run();
+  return res.meta.changes > 0 ? getMedia(db, siteId, id) : null;
+}
+
+/** Media of works soft-deleted before the cutoff: the cron must delete their R2 objects before purging the works. */
+export async function findMediaOfDeletedWorks(db: D1Database, olderThanIso: string): Promise<Media[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT m.* FROM media m JOIN works w ON w.id = m.work_id
+       WHERE w.deleted_at IS NOT NULL AND w.deleted_at < ? ORDER BY m.id`,
+    )
+    .bind(olderThanIso)
+    .all<MediaRow>();
+  return results.map(rowToMedia);
+}

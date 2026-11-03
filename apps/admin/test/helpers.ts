@@ -52,3 +52,38 @@ export async function call(email: string, method: string, path: string, body?: u
 export async function contentVersion(email: string): Promise<number> {
   return ((await (await call(email, "GET", "/api/me")).json()) as any).site.contentVersion;
 }
+
+export const bytesOf = (text: string) => new TextEncoder().encode(text);
+
+/** Raw upload to the blob endpoint; Content-Length is sent explicitly, as a real browser does. */
+export async function putBlob(
+  email: string,
+  path: string,
+  body: Uint8Array | null,
+  headers: Record<string, string> = {},
+): Promise<Response> {
+  const lengthHeader: Record<string, string> = body ? { "content-length": String(body.byteLength) } : {};
+  return request(path, {
+    method: "PUT",
+    headers: { ...(await authed(email)), ...lengthHeader, ...headers },
+    body: (body ?? undefined) as unknown as BodyInit | undefined,
+  });
+}
+
+/** Creates a work and a pending media row through the API. */
+export async function newMedia(
+  email: string,
+  opts: { variants?: string[]; kind?: "image" | "video"; mime?: string } = {},
+): Promise<{ work: any; media: any; res: Response }> {
+  const work = (await (await call(email, "POST", "/api/works")).json()) as any;
+  const kind = opts.kind ?? "image";
+  const res = await call(email, "POST", `/api/works/${work.id}/media`, {
+    kind,
+    mime: opts.mime ?? (kind === "image" ? "image/jpeg" : "video/mp4"),
+    width: 100,
+    height: 50,
+    bytes: 10,
+    variants: opts.variants ?? ["original", "w480"],
+  });
+  return { work, media: res.status === 201 ? await res.json() : null, res };
+}

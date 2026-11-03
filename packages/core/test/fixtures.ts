@@ -40,7 +40,7 @@ export async function addWork(
     const kind = m.kind ?? "image";
     let row = await createMedia(db, siteId, saved.id, {
       kind,
-      mime: kind === "image" ? "image/webp" : "video/mp4",
+      mime: kind === "image" ? ("image/webp" as const) : ("video/mp4" as const),
       width: m.width ?? 1200,
       height: m.height ?? 800,
       bytes: 1000,

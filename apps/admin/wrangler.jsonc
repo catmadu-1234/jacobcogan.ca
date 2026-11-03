@@ -13,5 +13,6 @@
     { "binding": "DB", "database_name": "senka-db", "database_id": "local", "migrations_dir": "../../migrations" }
   ],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "senka-media" }],
-  "vars": { "ACCESS_TEAM_DOMAIN": "", "ACCESS_AUD": "" }
+  "vars": { "ACCESS_TEAM_DOMAIN": "", "ACCESS_AUD": "" },
+  "triggers": { "crons": ["17 3 * * *"] }
 }

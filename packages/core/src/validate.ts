@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MAX_UPLOAD_BYTES } from "./types";
+import { ALLOWED_MIME, MAX_UPLOAD_BYTES } from "./types";
 import { slugify } from "./slug";
 
 const httpUrl = z
@@ -53,7 +53,7 @@ export type WorkPatch = z.infer<typeof WorkPatch>;
 
 export const MediaCreate = z.object({
   kind: z.enum(["image", "video"]),
-  mime: z.string().min(1).max(100),
+  mime: z.enum(ALLOWED_MIME),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
   duration: z.number().nonnegative().optional(),
