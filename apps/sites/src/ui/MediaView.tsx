@@ -15,14 +15,14 @@ interface Props {
 const SHORT_CLIP_SECONDS = 30;
 
 export function MediaView({ media, alt, priority, name }: Props) {
-  const vars = { ...rowItemVars(media), ...(name ? { "--vt": `work-${name}` } : {}) };
+  const vars = { ...rowItemVars(media), "--w": `${media.width}px`, ...(name ? { "--vt": `work-${name}` } : {}) };
 
   if (media.kind === "video") {
     const short = (media.duration ?? 0) > 0 && (media.duration ?? 0) <= SHORT_CLIP_SECONDS;
     return (
       <figure className={styles.figure} style={cssVars(vars)}>
         <video
-          className={styles.media}
+          className={`${styles.media} ${styles.box}`}
           src={media.src}
           poster={media.poster ?? undefined}
           width={media.width}
@@ -41,7 +41,7 @@ export function MediaView({ media, alt, priority, name }: Props) {
 
   return (
     <figure className={styles.figure} style={cssVars(vars)}>
-      <a className={styles.zoom} href={media.full} data-full={media.full} data-alt={alt}>
+      <a className={`${styles.zoom} ${styles.box}`} href={media.full} data-full={media.full} data-alt={alt}>
         <img
           className={styles.media}
           src={media.src}

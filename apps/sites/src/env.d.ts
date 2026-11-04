@@ -25,4 +25,9 @@ declare global {
   }
 }
 
+declare global {
+  /** Unique to each build (set in astro.config.mjs); part of the page cache key. */
+  const __BUILD_ID__: string;
+}
+
 export {};

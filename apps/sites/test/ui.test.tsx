@@ -89,6 +89,13 @@ describe("MediaView", () => {
     expect(out).toContain("--vt:work-blue-hour");
   });
 
+  it("reserves the picture's exact space before it loads, from its width and proportions", () => {
+    const out = html(<MediaView media={image()} alt="Harbour" priority name="blue-hour" />);
+    expect(out).toContain("--ar:1.5000");
+    expect(out).toContain("--w:3000px");
+    expect(html(<MediaView media={video()} alt="" priority={false} />)).toContain("--w:3000px");
+  });
+
   it("plays short clips muted on a loop, keeping controls as the no-script fallback", () => {
     const out = html(<MediaView media={video({ duration: 12 })} alt="" priority={false} />);
     expect(out).toContain("<video");

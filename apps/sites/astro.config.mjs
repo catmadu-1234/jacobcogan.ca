@@ -9,5 +9,7 @@ export default defineConfig({
   adapter: cloudflare({ imageService: "passthrough", persistState: { path: "../../.wrangler/state" } }),
   integrations: [react()],
   build: { inlineStylesheets: "always" },
+  // A fresh id for every build, so pages cached by an earlier deploy are never served by a newer one.
+  vite: { define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) } },
   devToolbar: { enabled: false },
 });

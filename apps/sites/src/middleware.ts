@@ -24,5 +24,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // `caches.default` is a Workers extension that the DOM typings don't know about. Pages are only cached in
   // production: while developing (or editing visually in Onlook) every change must show up straight away.
   const cache = import.meta.env.PROD ? (caches as unknown as { default?: Cache }).default : undefined;
-  return withVersionCache(cache, context.request, resolved.site, ctx, render);
+  return withVersionCache(cache, context.request, resolved.site, ctx, render, __BUILD_ID__);
 });

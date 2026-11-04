@@ -1,4 +1,4 @@
-import { useId, useState, type KeyboardEvent } from "react";
+import { useId, useRef, useState, type KeyboardEvent } from "react";
 import { X } from "lucide-react";
 import { MAX_TAGS, addTag, suggest } from "../lib/tags";
 import styles from "./TagInput.module.css";
@@ -14,6 +14,7 @@ export function TagInput({ tags, suggestions, onChange }: Props) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { matches, canCreate } = suggest(query, suggestions, tags);
   const options = canCreate ? [...matches, query.trim()] : matches;
@@ -44,7 +45,8 @@ export function TagInput({ tags, suggestions, onChange }: Props) {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.box}>
+      {/* Clicking the empty part of the box (not a chip or its remove button) starts typing. */}
+      <div className={styles.box} onClick={(e) => e.target === e.currentTarget && inputRef.current?.focus()}>
         {tags.map((t) => (
           <span key={t} className={styles.chip}>
             {t}
@@ -54,6 +56,7 @@ export function TagInput({ tags, suggestions, onChange }: Props) {
           </span>
         ))}
         <input
+          ref={inputRef}
           className={styles.input}
           role="combobox"
           aria-label="Add a tag"

@@ -5,11 +5,12 @@ const EDGE = "public, s-maxage=86400";
 
 /**
  * The cache key for a page. It includes the site's content version, which the admin bumps on every change, so
- * publishing makes every old page unreachable without purging anything. The hostname is included because pages
- * contain absolute URLs.
+ * publishing makes every old page unreachable without purging anything. It also includes the build id, so
+ * deploying new code does too: a cached page from an older build would point at asset files that no longer
+ * exist. The hostname is included because pages contain absolute URLs.
  */
-export function versionCacheKey(site: Pick<Site, "id" | "contentVersion">, url: URL): string {
-  return `https://cache.senka.invalid/${url.hostname}/${site.id}/${site.contentVersion}${url.pathname}${url.search}`;
+export function versionCacheKey(site: Pick<Site, "id" | "contentVersion">, url: URL, buildId = ""): string {
+  return `https://cache.senka.invalid/${url.hostname}/${site.id}/${site.contentVersion}/${buildId}${url.pathname}${url.search}`;
 }
 
 /**
@@ -22,10 +23,12 @@ export async function withVersionCache(
   site: Pick<Site, "id" | "contentVersion">,
   ctx: { waitUntil(promise: Promise<unknown>): void },
   render: () => Promise<Response>,
+  /** Identifies the deployed build; a different build never reuses another build's pages. */
+  buildId = "",
 ): Promise<Response> {
   if (request.method !== "GET" || !cache) return render();
 
-  const key = new Request(versionCacheKey(site, new URL(request.url)));
+  const key = new Request(versionCacheKey(site, new URL(request.url), buildId));
   const hit = await cache.match(key);
   if (hit) return withHeaders(hit, "HIT");
 

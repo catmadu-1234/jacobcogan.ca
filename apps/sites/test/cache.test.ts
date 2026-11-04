@@ -28,6 +28,26 @@ describe("versionCacheKey", () => {
   });
 });
 
+describe("build id in the cache key", () => {
+  it("changes the key when a new version of the code is deployed", () => {
+    const url = new URL("https://x.dev/site-a");
+    expect(versionCacheKey(site, url, "build-1")).not.toBe(versionCacheKey(site, url, "build-2"));
+  });
+  it("renders again after a deploy even though the content did not change", async () => {
+    const { cache } = fakeCache();
+    const c = ctx();
+    let renders = 0;
+    const render = () => { renders++; return page()(); };
+    const req = new Request("https://x.dev/a");
+    await withVersionCache(cache, req, site, c, render, "build-1");
+    await c.settle();
+    await withVersionCache(cache, req, site, c, render, "build-1");
+    expect(renders).toBe(1);
+    await withVersionCache(cache, req, site, c, render, "build-2");
+    expect(renders).toBe(2);
+  });
+});
+
 describe("withVersionCache", () => {
   it("renders on a miss, stores the page, and serves it from cache next time", async () => {
     const { cache } = fakeCache();

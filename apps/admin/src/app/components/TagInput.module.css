@@ -27,6 +27,7 @@
   font-size: var(--text-sm);
 }
 .remove {
+  position: relative;
   display: grid;
   place-items: center;
   width: 28px;
@@ -36,6 +37,12 @@
   background: transparent;
   color: var(--muted);
   cursor: pointer;
+}
+/* The visible button is small; this widens the tappable area to the 44px used everywhere else. */
+.remove::after {
+  content: "";
+  position: absolute;
+  inset: -8px -6px;
 }
 .remove:hover {
   color: var(--ink);
