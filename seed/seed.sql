@@ -1,14 +1,10 @@
--- Initial data for a fresh database: the two sites, who may edit each, and the details every work can have.
--- Safe to run twice. BEFORE running it for real, replace the two REPLACE_ME emails below with the real ones
--- (the email each person signs in with through Cloudflare Access). See docs/deploy.md.
+-- Initial data for a fresh database: the two sites and the details every work can have. Safe to run twice.
+-- Who may sign in is NOT here, so no email addresses end up in the repository; docs/deploy.md adds them with a
+-- one-off command. (`pnpm seed:demo` adds sign-in users for local development only.)
 
 INSERT OR IGNORE INTO sites (id, slug, name, theme_json) VALUES
   (1, 'site-a', 'Site A', '{"preset":"grotesk"}'),
   (2, 'site-b', 'Site B', '{"preset":"serif-title","accent":"#7A3E2E"}');
-
-INSERT OR IGNORE INTO users (email, site_id) VALUES
-  ('REPLACE_ME_A@example.com', 1),
-  ('REPLACE_ME_B@example.com', 2);
 
 INSERT OR IGNORE INTO field_defs (site_id, key, label, type, required, sort) VALUES
   (1, 'medium',       'Medium',       'text',     0, 1),

@@ -1,9 +1,11 @@
 import { Hono } from "hono";
 import type { JWTVerifyGetKey } from "jose";
-import { bumpContentVersion, getSiteById, storageBytes } from "@senka/core";
+import { getSiteById, storageBytes } from "@senka/core";
 import { accessAuth } from "./auth";
+import { bumpOnWrite } from "./bump";
 import { runCleanup } from "./cron";
 import type { AppEnv } from "./env";
+import { rejectCrossSiteWrites } from "./guard";
 import { fieldRoutes } from "./routes/fields";
 import { mediaRoutes } from "./routes/media";
 import { siteRoutes } from "./routes/site";
@@ -17,11 +19,9 @@ export type { AppEnv, Env } from "./env";
 export function createApp(opts: { getKey?: JWTVerifyGetKey } = {}) {
   const api = new Hono<AppEnv>();
   api.use("*", accessAuth(opts));
-  // Any successful write invalidates the public site's cache, which is keyed by this version.
-  api.use("*", async (c, next) => {
-    await next();
-    if (c.req.method !== "GET" && c.res.status < 400) await bumpContentVersion(c.env.DB, c.get("siteId"));
-  });
+  api.use("*", rejectCrossSiteWrites());
+  // Any write invalidates the public site's cache, which is keyed by this version.
+  api.use("*", bumpOnWrite());
 
   api.get("/me", async (c) => {
     const siteId = c.get("siteId");

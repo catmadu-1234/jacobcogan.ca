@@ -31,6 +31,17 @@ describe("works", () => {
     expect(two.slug).toBe("blue-hour-2");
   });
 
+  it("keeps a work's URL stable once it has a real title, even one that looks like the placeholder", async () => {
+    const { a } = await seedTwoSites(db());
+    const w = await createWork(db(), a);
+    const first = (await updateWork(db(), a, w.id, { title: "Untitled #4", expectedUpdatedAt: w.updatedAt })) as any;
+    expect(first.slug).toBe("untitled-4");
+    const second = (await updateWork(db(), a, w.id, { title: "Untitled #4 (blue)", expectedUpdatedAt: first.updatedAt })) as any;
+    expect(second.slug).toBe("untitled-4");
+    const third = (await updateWork(db(), a, w.id, { title: "Something else", expectedUpdatedAt: second.updatedAt })) as any;
+    expect(third.slug).toBe("untitled-4");
+  });
+
   it("starts with an untitled slug and hidden", async () => {
     const { a } = await seedTwoSites(db());
     const w = await createWork(db(), a);

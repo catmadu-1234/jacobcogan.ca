@@ -21,6 +21,10 @@ declare global {
       site?: Site;
       /** "" on a site's own hostname, "/<slug>" when served from the shared address. */
       basePath: string;
+      /** The full address the visitor requested, from before any internal rewrite. */
+      publicUrl?: string;
+      /** Set once a request has been rewritten to its internal route (Astro then runs the middleware again). */
+      rewritten?: boolean;
     }
   }
 }

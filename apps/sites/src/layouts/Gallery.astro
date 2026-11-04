@@ -12,6 +12,7 @@ import "../styles/gallery.css";
 import "../styles/preset-grotesk.css";
 import "../styles/preset-serif-title.css";
 import { DEFAULT_THEME, type Site } from "@senka/core/types";
+import { canonicalUrl } from "../lib/canonical";
 import { themeStyle } from "../lib/style";
 import viewerScript from "../scripts/viewer.js?raw";
 
@@ -28,7 +29,7 @@ interface Props {
 
 const { site, title, description, image, interactive = false, noindex = false } = Astro.props;
 const theme = site?.theme ?? DEFAULT_THEME;
-const url = new URL(Astro.request.url);
+const url = new URL(Astro.locals.publicUrl ?? Astro.request.url);
 const preview = image ? new URL(image, url.origin).href : null;
 const fonts = theme.preset === "serif-title" ? [instrumentSansFont, instrumentSerifItalicFont] : [geistFont];
 ---
@@ -40,7 +41,7 @@ const fonts = theme.preset === "serif-title" ? [instrumentSansFont, instrumentSe
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description ? <meta name="description" content={description} /> : null}
-    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={`${url.origin}${url.pathname}`} />}
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonicalUrl(url.href)} />}
     <link rel="icon" href="data:," />
     {fonts.map((href) => <link rel="preload" as="font" type="font/woff2" href={href} crossorigin />)}
     <meta property="og:type" content="website" />

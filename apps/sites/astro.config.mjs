@@ -10,6 +10,13 @@ export default defineConfig({
   integrations: [react()],
   build: { inlineStylesheets: "always" },
   // A fresh id for every build, so pages cached by an earlier deploy are never served by a newer one.
-  vite: { define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) } },
+  vite: {
+    define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
+    // Local tools refuse host names they don't know. Allowing the reserved example.com lets a site's own domain be
+    // tried on this computer (send a Host header such as art.example.com). It has no effect on the deployed site.
+    server: { allowedHosts: [".example.com"] },
+    preview: { allowedHosts: [".example.com"] },
+  },
+  server: { allowedHosts: [".example.com"] },
   devToolbar: { enabled: false },
 });

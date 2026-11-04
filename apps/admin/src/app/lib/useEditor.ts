@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FieldDef, Media, Tag, Work } from "@senka/core/types";
-import { ApiError, api } from "./api";
+import { ApiError, api, sendDelete } from "./api";
 import { useAutosave } from "./autosave";
+import { createPendingDeletes } from "./pendingDeletes";
 import { navigate } from "./router";
 import { useStore } from "./store";
 import { showToast } from "./toast";
@@ -20,8 +21,6 @@ export interface EditPatch {
   coverMediaId?: number | null;
 }
 export type EditorStatus = "loading" | "ready" | "missing" | "error";
-
-const UNDO_MS = 5_000;
 
 /** Everything the work editor needs: loading, form state, autosave, media actions and deleting. */
 export function useEditor(id: number) {
@@ -121,35 +120,30 @@ export function useEditor(id: number) {
     }
   }
 
-  // Removing is undoable for 5 seconds; the server delete only happens when that window closes (or on leaving).
-  const waiting = useRef(new Map<number, { timer: ReturnType<typeof setTimeout>; commit: () => void }>());
+  // Removing is undoable for 5 seconds; the server delete happens when that window closes, or at once if the
+  // page goes away first (so a removed file cannot stay public).
+  const pending = useRef(createPendingDeletes());
   useEffect(() => {
-    const map = waiting.current;
+    const deletes = pending.current;
+    const stop = deletes.install();
     return () => {
-      for (const { timer, commit } of map.values()) {
-        clearTimeout(timer);
-        commit();
-      }
+      stop();
+      deletes.commitAll(false);
     };
   }, []);
 
   function removeMedia(target: Media) {
     const index = media.findIndex((m) => m.id === target.id);
     setMedia((list) => list.filter((m) => m.id !== target.id));
-    const commit = () => {
-      waiting.current.delete(target.id);
-      api("DELETE", `/api/media/${target.id}`)
+    pending.current.schedule(target.id, (keepalive) =>
+      sendDelete(`/api/media/${target.id}`, keepalive)
         .then(() => setCoverMediaId((c) => (c === target.id ? null : c)))
-        .catch(() => showToast("Couldn't remove that file. Reload and try again."));
-    };
-    waiting.current.set(target.id, { timer: setTimeout(commit, UNDO_MS), commit });
+        .catch(() => showToast("Couldn't remove that file. Reload and try again.")),
+    );
     showToast("File removed", {
       label: "Undo",
       run: () => {
-        const entry = waiting.current.get(target.id);
-        if (!entry) return;
-        clearTimeout(entry.timer);
-        waiting.current.delete(target.id);
+        if (!pending.current.cancel(target.id)) return;
         setMedia((list) => {
           const copy = [...list];
           copy.splice(Math.min(index, copy.length), 0, target);

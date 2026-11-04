@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Tag } from "@senka/core/types";
 import { tagSlug } from "@senka/core/slug";
-import { api } from "./api";
+import { api, sendDelete } from "./api";
+import { createPendingDeletes } from "./pendingDeletes";
 import { showToast } from "./toast";
-
-const UNDO_MS = 5_000;
 
 /** The site's tags with rename (merge-aware) and an undoable delete. */
 export function useTags() {
@@ -36,35 +35,28 @@ export function useTags() {
     await load();
   }
 
-  // Deleting is undoable for 5 seconds; the server only hears about it when that window closes (or on leaving).
-  const waiting = useRef(new Map<number, { timer: ReturnType<typeof setTimeout>; commit: () => void }>());
+  // Deleting is undoable for 5 seconds; the server hears about it when that window closes, or at once if the page
+  // goes away first.
+  const pending = useRef(createPendingDeletes());
   useEffect(() => {
-    const map = waiting.current;
+    const deletes = pending.current;
+    const stop = deletes.install();
     return () => {
-      for (const { timer, commit } of map.values()) {
-        clearTimeout(timer);
-        commit();
-      }
+      stop();
+      deletes.commitAll(false);
     };
   }, []);
 
   function remove(tag: Tag): void {
     const index = tags.findIndex((t) => t.id === tag.id);
     setTags((list) => list.filter((t) => t.id !== tag.id));
-    const commit = () => {
-      waiting.current.delete(tag.id);
-      api("DELETE", `/api/tags/${tag.id}`).catch(() => {
-        showToast("Couldn't delete that tag. Reload and try again.");
-      });
-    };
-    waiting.current.set(tag.id, { timer: setTimeout(commit, UNDO_MS), commit });
+    pending.current.schedule(tag.id, (keepalive) =>
+      sendDelete(`/api/tags/${tag.id}`, keepalive).catch(() => showToast("Couldn't delete that tag. Reload and try again.")),
+    );
     showToast("Tag deleted", {
       label: "Undo",
       run: () => {
-        const entry = waiting.current.get(tag.id);
-        if (!entry) return;
-        clearTimeout(entry.timer);
-        waiting.current.delete(tag.id);
+        if (!pending.current.cancel(tag.id)) return;
         setTags((list) => {
           const copy = [...list];
           copy.splice(Math.min(index, copy.length), 0, tag);

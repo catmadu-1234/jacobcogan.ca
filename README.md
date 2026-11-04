@@ -9,7 +9,7 @@ apps/admin      the admin: React app + a small API, behind a Cloudflare Access l
 apps/sites      both gallery sites: Astro, rendered on the server, no JavaScript on the grid pages
 packages/core   the database queries and rules both of them share
 migrations/     the database tables
-seed/           the starting data (two sites, who can edit each, the default details)
+seed/           the starting data (the two sites and the default details)
 docs/           design spec, deploy guide, implementation plan
 ```
 

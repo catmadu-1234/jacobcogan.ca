@@ -7,6 +7,10 @@ export type Parsed<T> = { ok: true; data: T } | { ok: false; res: Response };
 
 /** Reads a size-limited JSON body and validates it; failures come back as ready-to-return 400/413 responses. */
 export async function readJson<S extends z.ZodType>(c: Context, schema: S): Promise<Parsed<z.infer<S>>> {
+  // Web pages can send "plain text" bodies to any address without permission, so only real JSON is accepted.
+  if (!(c.req.header("content-type") ?? "").toLowerCase().startsWith("application/json")) {
+    return { ok: false, res: c.json({ error: "unsupported-media-type" }, 415) };
+  }
   const declared = Number(c.req.header("content-length") ?? 0);
   if (declared > MAX_JSON_BYTES) return { ok: false, res: c.json({ error: "too-large" }, 413) };
   const text = await c.req.text();

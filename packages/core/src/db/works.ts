@@ -90,7 +90,7 @@ export async function updateWork(
   let slug = cur.slug;
   if (patch.slug) {
     slug = await uniqueSlug(db, siteId, patch.slug, id);
-  } else if (patch.title !== undefined && patch.title !== cur.title && cur.slug.startsWith("untitled-")) {
+  } else if (patch.title !== undefined && patch.title !== cur.title && cur.slug === `untitled-${cur.id}`) {
     const base = slugify(patch.title);
     if (base) slug = await uniqueSlug(db, siteId, base, id);
   }

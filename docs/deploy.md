@@ -31,7 +31,7 @@ pnpm --filter admin exec wrangler login
 pnpm --filter admin exec wrangler d1 create senka-db
 ```
 
-It prints a `database_id`. Paste it into **both** `apps/admin/wrangler.jsonc` and `apps/sites/wrangler.jsonc`, replacing `"local"`.
+It prints a `database_id`. Paste it into **both** `apps/admin/wrangler.jsonc` and `apps/sites/wrangler.jsonc`, replacing `"local"`. It is an identifier, not a secret, and **you must commit these two files**: the automatic publishing in section 2 deploys exactly what is in the repository.
 
 **3. Create the file storage for images and videos.**
 
@@ -39,14 +39,20 @@ It prints a `database_id`. Paste it into **both** `apps/admin/wrangler.jsonc` an
 pnpm --filter admin exec wrangler r2 bucket create senka-media
 ```
 
-**4. Say who is allowed in.** Open `seed/seed.sql` and replace the two `REPLACE_ME` emails with your real ones. Site A belongs to the first, Site B to the second. Rename the sites and pick their look later in the admin.
-
-**5. Create the tables and the starting data.**
+**4. Create the tables and the starting data** (the two sites and the default details):
 
 ```bash
 pnpm --filter admin exec wrangler d1 migrations apply senka-db --remote
 pnpm --filter admin exec wrangler d1 execute senka-db --remote --file ../../seed/seed.sql
 ```
+
+**5. Say who is allowed in.** Replace the two emails with the real ones (the address each of you signs in with). Site A belongs to the first, Site B to the second. This is a one-off command, so your addresses never go into the project's files or GitHub:
+
+```bash
+pnpm --filter admin exec wrangler d1 execute senka-db --remote --command "INSERT INTO users (email, site_id) VALUES ('first@example.com', 1), ('second@example.com', 2)"
+```
+
+You can rename the sites and choose their look later in the admin.
 
 **6. Publish the portfolios first**, so you learn your `workers.dev` address.
 
@@ -80,7 +86,7 @@ At this point the admin refuses everyone (it is not yet connected to a login), w
    "vars": { "ACCESS_TEAM_DOMAIN": "<team>.cloudflareaccess.com", "ACCESS_AUD": "<the AUD tag>" }
    ```
 
-   These are not secrets. Then publish the admin again (same command as step 7).
+   These are not secrets. Commit this file too, then publish the admin again (same command as step 7).
 
 **9. Check that it works.**
 

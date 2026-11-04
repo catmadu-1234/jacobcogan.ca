@@ -62,3 +62,11 @@ export async function api<T = unknown>(method: string, path: string, body?: unkn
   if (!res.ok) throw new ApiError(res.status, parsed);
   return parsed as T;
 }
+
+/** A DELETE that the browser may finish after the page is gone (used when closing the tab with deletes waiting). */
+export function sendDelete(path: string, keepalive: boolean): Promise<unknown> {
+  if (!keepalive) return api("DELETE", path);
+  return fetch(path, { method: "DELETE", credentials: "same-origin", keepalive: true }).then((res) => {
+    if (!res.ok) throw new ApiError(res.status, null);
+  });
+}
