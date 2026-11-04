@@ -1,0 +1,20 @@
+.main {
+  display: grid;
+  gap: var(--space-5);
+  padding-top: var(--space-8);
+}
+.title {
+  font-size: var(--text-lg);
+  font-weight: 500;
+}
+.list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+.list a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}

@@ -1,0 +1,40 @@
+:root {
+  --wall: #fafaf8; /* warm off-white: a gallery wall rather than screen white */
+  --paper: #ffffff;
+  --ink: #141414;
+  --muted: #6b6b66; /* 5.3:1 on --wall */
+  --hair: #e6e6e1;
+  --accent: #141414; /* overridden per site; used for focus, hover and links only */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 80px;
+  --space-9: 128px;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 180ms;
+  --focus: 0 0 0 2px var(--wall), 0 0 0 4px var(--accent);
+
+  --page-gutter: clamp(16px, 4vw, 64px);
+  --row-gap: clamp(12px, 2vw, 32px);
+  --font-body: system-ui, sans-serif;
+  --font-title: system-ui, sans-serif;
+  --font-meta: ui-monospace, monospace;
+  --title-style: normal;
+  --title-weight: 500;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur: 0ms;
+  }
+}

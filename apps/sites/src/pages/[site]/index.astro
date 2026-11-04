@@ -1,0 +1,26 @@
+---
+import { env } from "cloudflare:workers";
+import { listPublicWorks } from "@senka/core";
+import Gallery from "../../layouts/Gallery.astro";
+import { collectTags } from "../../lib/tags";
+import { describe, siteForPage } from "../../lib/page";
+import { IndexPage } from "../../ui/IndexPage";
+
+export const prerender = false;
+const site = await siteForPage(Astro.locals.site, Astro.params.site, env.DB);
+if (!site) return Astro.rewrite("/404");
+
+const works = await listPublicWorks(env.DB, site, env.MEDIA_BASE);
+---
+
+<Gallery site={site} title={site.name} description={describe(site.about, `${site.name} — portfolio`)} image={works[0]?.cover?.src}>
+  <IndexPage
+    siteName={site.name}
+    basePath={Astro.locals.basePath}
+    works={works}
+    tags={collectTags(works)}
+    activeTag={null}
+    rowHeight={site.theme.rowHeight}
+    showCaptions={site.theme.showIndexCaptions}
+  />
+</Gallery>

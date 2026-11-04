@@ -1,0 +1,26 @@
+.bar {
+  display: flex;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.bar::-webkit-scrollbar {
+  display: none;
+}
+.bar a {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.bar a:hover {
+  color: var(--ink);
+}
+.bar a[aria-current="page"] {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}

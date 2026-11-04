@@ -4,6 +4,8 @@ import { rowToMedia } from "./db/media";
 export interface PublicMedia {
   kind: "image" | "video"; width: number; height: number; color: string | null; alt: string;
   duration: number | null; src: string; srcset: string | null; poster: string | null;
+  /** The untouched original, for opening full size. */
+  full: string;
 }
 export interface PublicWork {
   slug: string; title: string;
@@ -28,7 +30,7 @@ export function toPublicMedia(m: Media, mediaBase: string): PublicMedia {
   }
   return {
     kind: m.kind, width: m.width, height: m.height, color: m.color, alt: m.alt, duration: m.duration,
-    src, srcset, poster: m.kind === "video" && has("poster") ? url("poster") : null,
+    src, srcset, poster: m.kind === "video" && has("poster") ? url("poster") : null, full: url("original"),
   };
 }
 

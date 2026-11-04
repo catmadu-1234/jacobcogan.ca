@@ -1,0 +1,20 @@
+.figure {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  view-transition-name: var(--vt, none);
+}
+.zoom {
+  display: block;
+  max-width: 100%;
+  cursor: zoom-in;
+}
+/* Never taller than the screen, never upscaled, always in proportion. */
+.media {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 85svh;
+  background-color: var(--bg);
+}

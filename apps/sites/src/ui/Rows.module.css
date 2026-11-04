@@ -1,0 +1,84 @@
+/* Justified rows without JavaScript: each tile's width follows its aspect ratio, so every row fills the width
+   and nothing is cropped. */
+.rows {
+  --row-h: 240px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--row-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Keeps a short last row from stretching across the page. */
+.rows::after {
+  content: "";
+  flex-grow: 1e4;
+}
+.rows[data-captions="always"] {
+  row-gap: calc(var(--row-gap) + 28px);
+}
+.item {
+  position: relative;
+  min-width: 0;
+  flex: calc(var(--ar) * 100) 1 calc(var(--ar) * var(--row-h));
+  aspect-ratio: var(--ar);
+  background-color: var(--bg);
+  view-transition-name: var(--vt);
+}
+.link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.caption {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  pointer-events: none;
+}
+.rows[data-captions="always"] .caption {
+  opacity: 1;
+}
+@media (hover: hover) {
+  .link:hover .caption {
+    opacity: 1;
+  }
+}
+.link:focus-visible .caption {
+  opacity: 1;
+}
+@media (max-width: 639px) {
+  .rows {
+    display: grid;
+    gap: var(--space-7);
+  }
+  .rows[data-captions="always"] {
+    row-gap: var(--space-8);
+  }
+  .item {
+    flex: none;
+  }
+  .rows::after {
+    display: none;
+  }
+}
+@media (min-width: 960px) {
+  .rows {
+    --row-h: var(--row-h-md, 320px);
+  }
+}
+@media (min-width: 1600px) {
+  .rows {
+    --row-h: calc(var(--row-h-md, 320px) * 1.25);
+  }
+}

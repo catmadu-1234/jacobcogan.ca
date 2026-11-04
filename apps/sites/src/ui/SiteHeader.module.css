@@ -1,0 +1,33 @@
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5) 0 var(--space-6);
+}
+.name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.nav {
+  display: flex;
+  gap: var(--space-5);
+  color: var(--muted);
+}
+.nav a:hover,
+.nav a[aria-current="page"] {
+  color: var(--ink);
+}
+.name:hover {
+  color: var(--accent);
+}
+.skip {
+  position: absolute;
+  left: var(--space-4);
+  top: -48px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--paper);
+}
+.skip:focus {
+  top: var(--space-2);
+}

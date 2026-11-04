@@ -1,0 +1,26 @@
+.main {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 60ch;
+}
+.paragraph {
+  line-height: 1.7;
+  white-space: pre-line;
+}
+.empty {
+  color: var(--muted);
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+.links a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.links a:hover {
+  color: var(--accent);
+}

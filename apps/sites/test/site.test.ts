@@ -1,6 +1,7 @@
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
 import { resolveSiteFromRequest, rewritePath } from "../src/lib/site";
+import { siteForPage } from "../src/lib/page";
 import { seedSites } from "./fixtures";
 
 const url = (s: string) => new URL(s);
@@ -54,5 +55,37 @@ describe("rewritePath", () => {
     for (const p of ["/media/1/2/w480", "/_astro/x.js", "/robots.txt", "/api/public/site-b/works"]) {
       expect(rewritePath(p, "site-b", ""), p).toBeNull();
     }
+  });
+});
+
+describe("siteForPage", () => {
+  it("uses the site the middleware resolved when it matches the URL's slug", async () => {
+    const { a } = await seedSites();
+    expect(await siteForPage(a, "site-a", env.DB)).toEqual(a);
+  });
+  it("looks the site up by slug when the middleware did not resolve one", async () => {
+    const { a } = await seedSites();
+    expect((await siteForPage(undefined, "site-a", env.DB))!.id).toBe(a.id);
+  });
+  it("refuses a page whose slug belongs to a different site than the one resolved for the request", async () => {
+    const { a } = await seedSites();
+    expect(await siteForPage(a, "site-b", env.DB)).toBeNull();
+  });
+  it("returns null for unknown or missing slugs", async () => {
+    await seedSites();
+    expect(await siteForPage(undefined, "nope", env.DB)).toBeNull();
+    expect(await siteForPage(undefined, undefined, env.DB)).toBeNull();
+    expect(await siteForPage(undefined, "", env.DB)).toBeNull();
+  });
+});
+
+describe("describe", () => {
+  it("flattens whitespace, trims to 155 characters with an ellipsis, and falls back when empty", async () => {
+    const { describe: summarise } = await import("../src/lib/page");
+    expect(summarise("  Painter\n\nbased  in  Lisbon. ", "x")).toBe("Painter based in Lisbon.");
+    expect(summarise("", "Fallback")).toBe("Fallback");
+    const long = summarise("word ".repeat(100), "x");
+    expect(long.length).toBeLessThanOrEqual(155);
+    expect(long.endsWith("…")).toBe(true);
   });
 });

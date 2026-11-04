@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import {
   DEFAULT_THEME, getSiteById, getSiteBySlug, getSiteByHostname, getUserSiteId,
-  updateSite, bumpContentVersion, storageBytes,
+  updateSite, bumpContentVersion, storageBytes, listSites,
 } from "../src";
 import { seedTwoSites } from "./fixtures";
 
@@ -40,5 +40,10 @@ describe("sites and users", () => {
   it("sums media bytes for storage", async () => {
     const { a } = await seedTwoSites(env.DB);
     expect(await storageBytes(env.DB, a)).toBe(0);
+  });
+
+  it("lists all sites by name for the shared landing page", async () => {
+    await seedTwoSites(env.DB);
+    expect((await listSites(env.DB)).map((s) => s.slug)).toEqual(["site-a", "site-b"]);
   });
 });

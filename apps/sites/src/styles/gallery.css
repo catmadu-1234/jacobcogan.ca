@@ -1,0 +1,57 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light;
+}
+body {
+  margin: 0;
+  background: var(--wall);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+h1,
+h2,
+p,
+dl,
+dd,
+ul {
+  margin: 0;
+}
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* The shared page container: generous gutters, and a cap so very wide screens keep the work in view. */
+.page {
+  max-width: 1760px;
+  margin: 0 auto;
+  padding: 0 var(--page-gutter) var(--space-8);
+}
+
+/* Smooth hand-off between the grid and a work's page, where the browser supports it. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+}
+::view-transition-group(*) {
+  animation-duration: 240ms;
+  animation-timing-function: var(--ease);
+}

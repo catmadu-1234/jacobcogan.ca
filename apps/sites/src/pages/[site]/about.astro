@@ -1,0 +1,14 @@
+---
+import { env } from "cloudflare:workers";
+import Gallery from "../../layouts/Gallery.astro";
+import { describe, siteForPage } from "../../lib/page";
+import { AboutPage } from "../../ui/AboutPage";
+
+export const prerender = false;
+const site = await siteForPage(Astro.locals.site, Astro.params.site, env.DB);
+if (!site) return Astro.rewrite("/404");
+---
+
+<Gallery site={site} title={`About — ${site.name}`} description={describe(site.about, `About ${site.name}`)}>
+  <AboutPage siteName={site.name} basePath={Astro.locals.basePath} about={site.about} links={site.links} />
+</Gallery>

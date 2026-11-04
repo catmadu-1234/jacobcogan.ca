@@ -1,0 +1,26 @@
+---
+import { env } from "cloudflare:workers";
+import { getPublicWork } from "@senka/core";
+import Gallery from "../../../layouts/Gallery.astro";
+import { describe, siteForPage } from "../../../lib/page";
+import { WorkPage } from "../../../ui/WorkPage";
+
+export const prerender = false;
+const site = await siteForPage(Astro.locals.site, Astro.params.site, env.DB);
+if (!site) return Astro.rewrite("/404");
+
+const found = await getPublicWork(env.DB, site, Astro.params.slug ?? "", env.MEDIA_BASE);
+if (!found) return Astro.rewrite("/404");
+const { work, prev, next } = found;
+const summary = work.details.map((d) => `${d.label}: ${d.value}`).join(" · ");
+---
+
+<Gallery
+  site={site}
+  title={`${work.title || "Untitled"} — ${site.name}`}
+  description={describe(summary, `${work.title || "Untitled"} by ${site.name}`)}
+  image={work.cover?.src}
+  interactive
+>
+  <WorkPage siteName={site.name} basePath={Astro.locals.basePath} work={work} prev={prev} next={next} />
+</Gallery>

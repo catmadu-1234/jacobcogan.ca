@@ -1,0 +1,34 @@
+.dialog {
+  width: 100%;
+  max-width: 100vw;
+  height: 100%;
+  max-height: 100dvh;
+  padding: 0;
+  border: 0;
+  background: var(--wall);
+  color: var(--ink);
+}
+.dialog::backdrop {
+  background: var(--wall);
+}
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* lets the browser's own pinch-zoom and pan work on touch screens */
+  touch-action: pinch-zoom pan-x pan-y;
+}
+.close {
+  position: fixed;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 2rem;
+  line-height: 1;
+  cursor: pointer;
+}

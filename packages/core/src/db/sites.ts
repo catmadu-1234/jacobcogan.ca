@@ -62,3 +62,9 @@ export async function storageBytes(db: D1Database, siteId: number): Promise<numb
     .first<{ n: number }>();
   return row?.n ?? 0;
 }
+
+/** Every site, by slug — used by the shared landing page. */
+export async function listSites(db: D1Database): Promise<Site[]> {
+  const { results } = await db.prepare("SELECT * FROM sites ORDER BY slug").all<SiteRow>();
+  return results.map(rowToSite);
+}

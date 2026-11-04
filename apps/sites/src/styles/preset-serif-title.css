@@ -1,0 +1,7 @@
+html[data-preset="serif-title"] {
+  --font-body: "Instrument Sans Variable", system-ui, sans-serif;
+  --font-title: "Instrument Serif", Georgia, serif;
+  --font-meta: "Instrument Sans Variable", system-ui, sans-serif;
+  --title-style: italic;
+  --title-weight: 400;
+}

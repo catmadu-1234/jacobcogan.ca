@@ -20,6 +20,13 @@ describe("toPublicMedia", () => {
     expect(p).toMatchObject({ width: 3000, height: 2000, color: "#aabbcc", alt: "alt", poster: null });
   });
 
+  it("links the untouched original for the lightbox", () => {
+    const m: Media = { ...base, kind: "image", variants: ["original", "w480", "w1200"] };
+    expect(toPublicMedia(m, "/media").full).toBe("/media/1/7/original");
+    const v: Media = { ...base, kind: "video", variants: ["original", "poster"] };
+    expect(toPublicMedia(v, "/media").full).toBe("/media/1/7/original");
+  });
+
   it("falls back to the original when no width variants exist", () => {
     const p = toPublicMedia({ ...base, kind: "image", variants: ["original"] }, "/media");
     expect(p.src).toBe("/media/1/7/original");

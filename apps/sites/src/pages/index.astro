@@ -1,0 +1,14 @@
+---
+import { env } from "cloudflare:workers";
+import { listSites } from "@senka/core";
+import Gallery from "../layouts/Gallery.astro";
+import { RootPage } from "../ui/RootPage";
+
+export const prerender = false;
+// Reached only on the shared address; a site's own hostname is rewritten to that site's home page.
+const sites = (await listSites(env.DB)).map((s) => ({ name: s.name, slug: s.slug }));
+---
+
+<Gallery title="Portfolios" description="Portfolios">
+  <RootPage sites={sites} />
+</Gallery>

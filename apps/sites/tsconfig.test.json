@@ -1,8 +1,24 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node", "@cloudflare/workers-types", "@cloudflare/vitest-plugin/types"],
-    "noEmit": true
+    "types": [
+      "node",
+      "@cloudflare/workers-types",
+      "@cloudflare/vitest-plugin/types"
+    ],
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ]
   },
-  "include": ["src/lib", "src/env.d.ts", "test", "vitest.config.ts"]
+  "include": [
+    "src/lib",
+    "src/ui",
+    "src/env.d.ts",
+    "test",
+    "vitest.config.ts"
+  ]
 }

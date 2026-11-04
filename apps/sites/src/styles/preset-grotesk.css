@@ -1,0 +1,7 @@
+html[data-preset="grotesk"] {
+  --font-body: "Geist Variable", system-ui, sans-serif;
+  --font-title: "Geist Variable", system-ui, sans-serif;
+  --font-meta: "Geist Mono Variable", ui-monospace, monospace;
+  --title-style: normal;
+  --title-weight: 500;
+}

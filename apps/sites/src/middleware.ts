@@ -21,7 +21,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const render = () => (target ? context.rewrite(target + url.search) : next());
 
   const ctx = context.locals.cfContext ?? { waitUntil: () => {} };
-  // `caches.default` is a Workers extension that the DOM typings don't know about.
-  const cache = (caches as unknown as { default?: Cache }).default;
+  // `caches.default` is a Workers extension that the DOM typings don't know about. Pages are only cached in
+  // production: while developing (or editing visually in Onlook) every change must show up straight away.
+  const cache = import.meta.env.PROD ? (caches as unknown as { default?: Cache }).default : undefined;
   return withVersionCache(cache, context.request, resolved.site, ctx, render);
 });

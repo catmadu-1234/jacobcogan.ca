@@ -1,0 +1,12 @@
+---
+import Gallery from "../layouts/Gallery.astro";
+import { NotFoundPage } from "../ui/NotFoundPage";
+
+export const prerender = false;
+Astro.response.status = 404;
+const home = Astro.locals.basePath || "/";
+---
+
+<Gallery site={Astro.locals.site} title="Not found" noindex>
+  <NotFoundPage homeHref={home} />
+</Gallery>
