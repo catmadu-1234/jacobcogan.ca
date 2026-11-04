@@ -9,13 +9,11 @@ interface Props {
   reordering: boolean;
   dragging: boolean;
   onHandlePointerDown: (e: PointerEvent<HTMLButtonElement>) => void;
-  onHandlePointerMove: (e: PointerEvent<HTMLButtonElement>) => void;
-  onHandlePointerEnd: () => void;
   onHandleKeyDown: (e: KeyboardEvent<HTMLButtonElement>) => void;
 }
 
 export function WorkCard({
-  work, reordering, dragging, onHandlePointerDown, onHandlePointerMove, onHandlePointerEnd, onHandleKeyDown,
+  work, reordering, dragging, onHandlePointerDown, onHandleKeyDown,
 }: Props) {
   const title = work.title.trim() || "Untitled";
   const src = work.cover ? thumbUrl(work.cover) : null;
@@ -29,14 +27,14 @@ export function WorkCard({
 
   if (!reordering) {
     return (
-      <a className={styles.card} href={`#/works/${work.id}`} data-work-id={work.id}>
+      <a className={styles.card} href={`#/works/${work.id}`} data-reorder-id={work.id}>
         {thumb}
         {caption}
       </a>
     );
   }
   return (
-    <div className={`${styles.card} ${dragging ? styles.dragging : ""}`} data-work-id={work.id}>
+    <div className={`${styles.card} ${dragging ? styles.dragging : ""}`} data-reorder-id={work.id}>
       {thumb}
       {caption}
       <button
@@ -44,9 +42,6 @@ export function WorkCard({
         className={styles.handle}
         aria-label={`Move ${title}. Use the arrow keys, or drag.`}
         onPointerDown={onHandlePointerDown}
-        onPointerMove={onHandlePointerMove}
-        onPointerUp={onHandlePointerEnd}
-        onPointerCancel={onHandlePointerEnd}
         onKeyDown={onHandleKeyDown}
       >
         <GripVertical size={20} aria-hidden="true" />

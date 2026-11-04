@@ -6,6 +6,7 @@ import { Button } from "./components/Button";
 import { createWorkAndOpen } from "./lib/addWork";
 import { loadMe, useMe } from "./lib/me";
 import { useRoute } from "./lib/router";
+import { Editor } from "./screens/Editor";
 import { Works } from "./screens/Works";
 
 export function App() {
@@ -33,6 +34,8 @@ export function App() {
       <Shell siteName={me.site.name} route={route} onAdd={() => void createWorkAndOpen()}>
         {route.name === "works" ? (
           <Works onAdd={() => void createWorkAndOpen()} />
+        ) : route.name === "editor" ? (
+          <Editor key={route.params.id} id={Number(route.params.id)} />
         ) : (
           <EmptyState
             icon={<Images size={28} />}

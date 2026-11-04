@@ -1,0 +1,44 @@
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
+}
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+.track {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--hair);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease);
+}
+.on {
+  background: var(--ok);
+}
+.thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  transition: transform var(--dur) var(--ease);
+}
+.on .thumb {
+  transform: translateX(20px);
+}
+.track:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

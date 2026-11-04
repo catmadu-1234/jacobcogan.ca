@@ -142,4 +142,34 @@ describe("uploader", () => {
     await waitFor(() => up.items.get().every((i) => i.state === "done"));
     expect(peak).toBe(2);
   });
+
+  it("records whether each item is an image or a video", async () => {
+    const { d } = deps();
+    const up = createUploader(3, vi.fn(), d);
+    up.add([file("a.jpg", "image/jpeg"), file("clip.mov", "")]);
+    expect(up.items.get().map((i) => i.kind)).toEqual(["image", "video"]);
+  });
+
+  it("dismisses a failed item so it disappears and cannot be retried", async () => {
+    const { d } = deps({ prepare: vi.fn(async () => { throw new Error("x"); }) });
+    const up = createUploader(3, vi.fn(), d);
+    up.add([file("a.jpg", "image/jpeg")]);
+    await waitFor(() => up.items.get()[0]?.state === "error");
+    const id = up.items.get()[0]!.localId;
+    up.dismiss(id);
+    expect(up.items.get()).toEqual([]);
+    up.retry(id);
+    await settle();
+    expect(up.items.get()).toEqual([]);
+  });
+
+  it("skips an item dismissed while it was still waiting in the queue", async () => {
+    const { d } = deps();
+    const up = createUploader(3, vi.fn(), d);
+    up.add(Array.from({ length: 4 }, (_, i) => file(`f${i}.jpg`, "image/jpeg")));
+    up.dismiss(up.items.get()[3]!.localId);
+    await waitFor(() => up.items.get().every((i) => i.state === "done"));
+    expect(up.items.get()).toHaveLength(3);
+    expect(d.prepare).toHaveBeenCalledTimes(3);
+  });
 });

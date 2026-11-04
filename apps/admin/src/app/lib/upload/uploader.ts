@@ -10,6 +10,7 @@ export type UploadState = "preparing" | "uploading" | "processing" | "done" | "e
 export interface UploadItem {
   localId: string;
   name: string;
+  kind: "image" | "video";
   state: UploadState;
   /** 0..1 across every variant of the file. */
   progress: number;
@@ -99,7 +100,8 @@ export function createUploader(workId: number, onDone: (media: Media) => void, d
     items.set((list) => list.map((i) => (i.localId === id ? { ...i, ...changes } : i)));
 
   async function run(id: string): Promise<void> {
-    const file = files.get(id)!;
+    const file = files.get(id);
+    if (!file) return; // dismissed while waiting in the queue
     if (file.size > MAX_UPLOAD_BYTES) return patch(id, { state: "error", error: TOO_BIG });
     const mime = resolveMime(file);
     if (!mime) return patch(id, { state: "error", error: UNSUPPORTED });
@@ -156,10 +158,16 @@ export function createUploader(workId: number, onDone: (media: Media) => void, d
       for (const file of Array.from(list)) {
         const id = `u${++seq}`;
         files.set(id, file);
-        items.set((l) => [...l, { localId: id, name: file.name, state: "preparing", progress: 0, preview: deps.previewUrl(file) }]);
+        const kind = resolveMime(file)?.startsWith("video/") ? "video" : "image";
+        items.set((l) => [...l, { localId: id, name: file.name, kind, state: "preparing", progress: 0, preview: deps.previewUrl(file) }]);
         queue.push(id);
       }
       pump();
+    },
+    /** Removes an item (typically a failed one) from the list. */
+    dismiss(localId: string): void {
+      files.delete(localId);
+      items.set((list) => list.filter((i) => i.localId !== localId));
     },
     retry(localId: string): void {
       if (!files.has(localId)) return;

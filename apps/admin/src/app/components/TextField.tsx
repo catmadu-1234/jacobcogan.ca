@@ -1,0 +1,63 @@
+import { useEffect, useId, useRef } from "react";
+import styles from "./TextField.module.css";
+
+interface Props {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  multiline?: boolean;
+  type?: "text" | "url";
+  help?: string;
+  error?: string;
+  required?: boolean;
+  placeholder?: string;
+  maxLength?: number;
+}
+
+export function TextField({ label, value, onChange, multiline, type = "text", help, error, required, placeholder, maxLength }: Props) {
+  const id = useId();
+  const area = useRef<HTMLTextAreaElement>(null);
+
+  // Textareas grow with their content instead of scrolling.
+  useEffect(() => {
+    const el = area.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value, multiline]);
+
+  const describedBy = error ? `${id}-error` : help ? `${id}-help` : undefined;
+  const common = {
+    id,
+    value,
+    placeholder,
+    maxLength,
+    required,
+    "aria-invalid": error ? true : undefined,
+    "aria-describedby": describedBy,
+    className: `${styles.input} ${error ? styles.invalid : ""}`,
+  };
+
+  return (
+    <div className={styles.field}>
+      <label htmlFor={id} className={styles.label}>
+        {label}
+        {required ? <span className={styles.required}> (required)</span> : null}
+      </label>
+      {multiline ? (
+        <textarea {...common} ref={area} rows={3} onChange={(e) => onChange(e.target.value)} />
+      ) : (
+        <input {...common} type={type} onChange={(e) => onChange(e.target.value)} />
+      )}
+      {error ? (
+        <p id={`${id}-error`} className={styles.error}>
+          {error}
+        </p>
+      ) : help ? (
+        <p id={`${id}-help`} className={styles.help}>
+          {help}
+        </p>
+      ) : null}
+    </div>
+  );
+}

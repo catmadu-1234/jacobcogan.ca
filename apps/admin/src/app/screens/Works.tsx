@@ -1,7 +1,7 @@
-import { useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useState } from "react";
 import { Images, Search } from "lucide-react";
 import { api } from "../lib/api";
-import { moveItem } from "../lib/reorder";
+import { useDragReorder } from "../lib/useDragReorder";
 import { showToast } from "../lib/toast";
 import { useWorks, type WorkSummary } from "../lib/useWorks";
 import { Button } from "../components/Button";
@@ -16,35 +16,16 @@ interface Props {
 export function Works({ onAdd }: Props) {
   const { query, setQuery, tag, setTag, works, setWorks, tags, state, reload } = useWorks();
   const [order, setOrder] = useState<WorkSummary[] | null>(null);
-  const [dragId, setDragId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  // Reordering is edited locally and only saved when "Done" is pressed.
+  const reorder = useDragReorder(order ?? works, (ids) => {
+    const base = order ?? works;
+    setOrder(ids.map((id) => base.find((w) => w.id === id)!));
+  });
 
   const reordering = order !== null;
-  const shown = order ?? works;
+  const shown = reorder.shown;
   const filtered = query.trim() !== "" || tag !== "";
-
-  function move(id: number, toIndex: number) {
-    setOrder((current) => {
-      if (!current) return current;
-      return moveItem(current, current.findIndex((w) => w.id === id), toIndex);
-    });
-  }
-
-  function onPointerMove(e: PointerEvent<HTMLButtonElement>) {
-    if (dragId === null || !order) return;
-    const over = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>("[data-work-id]");
-    const overId = over ? Number(over.dataset.workId) : null;
-    if (overId !== null && overId !== dragId) move(dragId, order.findIndex((w) => w.id === overId));
-  }
-
-  function onKeyDown(id: number, e: KeyboardEvent<HTMLButtonElement>) {
-    if (!order) return;
-    const from = order.findIndex((w) => w.id === id);
-    const step = e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : 0;
-    if (!step) return;
-    e.preventDefault();
-    move(id, from + step);
-  }
 
   async function finishReorder() {
     if (!order) return;
@@ -138,14 +119,9 @@ export function Works({ onAdd }: Props) {
               key={w.id}
               work={w}
               reordering={reordering}
-              dragging={dragId === w.id}
-              onHandlePointerDown={(e) => {
-                e.currentTarget.setPointerCapture(e.pointerId);
-                setDragId(w.id);
-              }}
-              onHandlePointerMove={onPointerMove}
-              onHandlePointerEnd={() => setDragId(null)}
-              onHandleKeyDown={(e) => onKeyDown(w.id, e)}
+              dragging={reorder.dragId === w.id}
+              onHandlePointerDown={reorder.handlers(w.id).onPointerDown}
+              onHandleKeyDown={reorder.handlers(w.id).onKeyDown}
             />
           ))}
         </div>
