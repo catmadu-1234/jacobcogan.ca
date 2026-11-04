@@ -133,3 +133,15 @@ export async function findMediaOfDeletedWorks(db: D1Database, olderThanIso: stri
     .all<MediaRow>();
   return results.map(rowToMedia);
 }
+
+/** A media row only if the public site may serve it: ready, on a visible work that is not deleted. */
+export async function getPublicMediaFile(db: D1Database, siteId: number, id: number): Promise<Media | null> {
+  const row = await db
+    .prepare(
+      `SELECT m.* FROM media m JOIN works w ON w.id = m.work_id
+       WHERE m.id = ? AND m.site_id = ? AND m.status = 'ready' AND w.visible = 1 AND w.deleted_at IS NULL`,
+    )
+    .bind(id, siteId)
+    .first<MediaRow>();
+  return row ? rowToMedia(row) : null;
+}

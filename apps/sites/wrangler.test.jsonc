@@ -1,0 +1,8 @@
+{
+  "name": "senka-sites-test",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [{ "binding": "DB", "database_name": "senka-db", "database_id": "local" }],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "senka-media" }],
+  "vars": { "MEDIA_BASE": "/media" }
+}

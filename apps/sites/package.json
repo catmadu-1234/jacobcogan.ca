@@ -1,0 +1,36 @@
+{
+  "name": "sites",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "typecheck": "astro check && tsc --noEmit -p tsconfig.test.json",
+    "deploy": "astro build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.4.4",
+    "@astrojs/react": "^7.1.2",
+    "@fontsource-variable/geist": "^5",
+    "@fontsource-variable/geist-mono": "^5",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource/instrument-serif": "^5",
+    "@senka/core": "workspace:*",
+    "astro": "^7.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9",
+    "@cloudflare/vitest-plugin": "^1.5.1",
+    "@cloudflare/workers-types": "^5.20261103.1",
+    "@types/node": "^22",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.0",
+    "wrangler": "^4.157.0"
+  }
+}

@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import {
   createMedia, getMedia, listMediaForWork, updateMedia, reorderMedia, deleteMedia,
   mediaKeys, findOrphans, createWork, updateWork, softDeleteWork, getWork, listReadyMediaForSite,
-  markMediaReady, findMediaOfDeletedWorks,
+  markMediaReady, findMediaOfDeletedWorks, getPublicMediaFile,
 } from "../src";
 import { seedTwoSites, addWork } from "./fixtures";
 
@@ -124,5 +124,25 @@ describe("media", () => {
     await db().prepare("UPDATE works SET deleted_at = '2026-01-01T00:00:00.000Z' WHERE id = ?").bind(old.work.id).run();
     const found = await findMediaOfDeletedWorks(db(), "2026-06-01T00:00:00.000Z");
     expect(found.map((m) => m.id)).toEqual([old.media[0]!.id]);
+  });
+
+  describe("getPublicMediaFile", () => {
+    it("returns ready media of a visible work", async () => {
+      const { a } = await seedTwoSites(db());
+      const { media: [m] } = await addWork(db(), a, { title: "Shown" });
+      expect((await getPublicMediaFile(db(), a, m!.id))!.id).toBe(m!.id);
+    });
+    it("hides media of hidden, deleted and other sites' works, and media still pending", async () => {
+      const { a, b } = await seedTwoSites(db());
+      const hidden = await addWork(db(), a, { title: "Hidden", visible: false });
+      const deleted = await addWork(db(), a, { title: "Deleted" });
+      await softDeleteWork(db(), a, deleted.work.id);
+      const pending = await addWork(db(), a, { title: "Pending", media: [{ ready: false }] });
+      const shown = await addWork(db(), a, { title: "Shown" });
+      expect(await getPublicMediaFile(db(), a, hidden.media[0]!.id)).toBeNull();
+      expect(await getPublicMediaFile(db(), a, deleted.media[0]!.id)).toBeNull();
+      expect(await getPublicMediaFile(db(), a, pending.media[0]!.id)).toBeNull();
+      expect(await getPublicMediaFile(db(), b, shown.media[0]!.id)).toBeNull();
+    });
   });
 });

@@ -1,0 +1,12 @@
+{
+  "name": "senka-sites",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "d1_databases": [
+    { "binding": "DB", "database_name": "senka-db", "database_id": "local", "migrations_dir": "../../migrations" }
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "senka-media" }],
+  "vars": { "MEDIA_BASE": "/media" }
+}
