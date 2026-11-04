@@ -15,7 +15,12 @@ function classify(err: unknown): SaveState {
  * while a save is running go out afterwards; a failed patch is kept and merged with newer edits for the retry.
  * After a conflict (409) nothing more is sent: the page has to be reloaded to pick up the other change.
  */
-export function createAutosave<T extends object>(save: (patch: Partial<T>) => Promise<void>, delayMs = 800) {
+export function createAutosave<T extends object>(
+  save: (patch: Partial<T>) => Promise<void>,
+  delayMs = 800,
+  /** How two patches combine; the default is a shallow merge where the newer value wins. */
+  merge: (older: Partial<T>, newer: Partial<T>) => Partial<T> = (a, b) => ({ ...a, ...b }),
+) {
   const state: Store<SaveState> = createStore<SaveState>("saved");
   let pending: Partial<T> | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -39,7 +44,7 @@ export function createAutosave<T extends object>(save: (patch: Partial<T>) => Pr
       try {
         await save(patch);
       } catch (err) {
-        pending = { ...patch, ...(pending ?? {}) };
+        pending = pending ? merge(patch, pending) : patch;
         const next = classify(err);
         state.set(next);
         if (next === "offline") window.addEventListener("online", onOnline, { once: true });
@@ -55,7 +60,7 @@ export function createAutosave<T extends object>(save: (patch: Partial<T>) => Pr
   return {
     state,
     queue(patch: Partial<T>): void {
-      pending = { ...(pending ?? {}), ...patch };
+      pending = pending ? merge(pending, patch) : patch;
       if (state.get() === "conflict") return;
       state.set("saving");
       clearTimeout(timer);
@@ -71,10 +76,14 @@ export function createAutosave<T extends object>(save: (patch: Partial<T>) => Pr
 }
 
 /** One autosave per mounted screen; unsent edits are flushed when the screen goes away. */
-export function useAutosave<T extends object>(save: (patch: Partial<T>) => Promise<void>, delayMs?: number) {
+export function useAutosave<T extends object>(
+  save: (patch: Partial<T>) => Promise<void>,
+  delayMs?: number,
+  merge?: (older: Partial<T>, newer: Partial<T>) => Partial<T>,
+) {
   const saveRef = useRef(save);
   saveRef.current = save;
-  const autosave = useMemo(() => createAutosave<T>((p) => saveRef.current(p), delayMs), [delayMs]);
+  const autosave = useMemo(() => createAutosave<T>((p) => saveRef.current(p), delayMs, merge), [delayMs, merge]);
   useEffect(() => () => void autosave.flush(), [autosave]);
   return { autosave, state: useStore(autosave.state) };
 }

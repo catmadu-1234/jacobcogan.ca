@@ -20,6 +20,12 @@ export async function loadMe(): Promise<void> {
   }
 }
 
+/** Keeps the cached site in step after settings are saved. */
+export function updateMeSite(site: Site): void {
+  const current = meStore.get();
+  if (current.status === "ready") meStore.set({ ...current, site });
+}
+
 /** The signed-in user and their site; loads once on first use. */
 export function useMe(): MeState {
   const state = useStore(meStore);

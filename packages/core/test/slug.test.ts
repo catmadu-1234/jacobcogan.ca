@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { slugify } from "../src/slug";
+import { slugify, tagSlug } from "../src/slug";
 
 describe("slugify", () => {
   it("strips diacritics and punctuation", () => {
@@ -13,5 +13,16 @@ describe("slugify", () => {
   });
   it("caps at 80 chars", () => {
     expect(slugify("x".repeat(100)).length).toBe(80);
+  });
+});
+
+describe("tagSlug", () => {
+  it("matches slugify for ordinary names", () => {
+    expect(tagSlug("Oil Pastel")).toBe("oil-pastel");
+  });
+  it("gives names with no ascii letters a stable, distinct hash slug", () => {
+    expect(tagSlug("日本")).toMatch(/^tag-[0-9a-z]+$/);
+    expect(tagSlug("日本")).toBe(tagSlug("日本"));
+    expect(tagSlug("日本")).not.toBe(tagSlug("中国"));
   });
 });

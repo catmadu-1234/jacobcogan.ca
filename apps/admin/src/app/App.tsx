@@ -7,6 +7,8 @@ import { createWorkAndOpen } from "./lib/addWork";
 import { loadMe, useMe } from "./lib/me";
 import { useRoute } from "./lib/router";
 import { Editor } from "./screens/Editor";
+import { Settings } from "./screens/Settings";
+import { Tags } from "./screens/Tags";
 import { Works } from "./screens/Works";
 
 export function App() {
@@ -36,13 +38,10 @@ export function App() {
           <Works onAdd={() => void createWorkAndOpen()} />
         ) : route.name === "editor" ? (
           <Editor key={route.params.id} id={Number(route.params.id)} />
+        ) : route.name === "tags" ? (
+          <Tags />
         ) : (
-          <EmptyState
-            icon={<Images size={28} />}
-            text="This screen is on its way."
-            actionLabel="Back to works"
-            onAction={() => (window.location.hash = "#/works")}
-          />
+          <Settings />
         )}
       </Shell>
       <Toast />

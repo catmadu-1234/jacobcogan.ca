@@ -1,5 +1,5 @@
 import type { Tag } from "../types";
-import { slugify } from "../slug";
+import { tagSlug } from "../slug";
 
 interface TagRow { id: number; site_id: number; name: string; slug: string; count?: number }
 
@@ -8,15 +8,6 @@ const rowToTag = (r: TagRow): Tag => {
   if (r.count !== undefined) tag.count = r.count;
   return tag;
 };
-
-/** Slug for a tag name; names with no ascii letters get a stable hash-based slug. */
-export function tagSlug(name: string): string {
-  const s = slugify(name);
-  if (s) return s;
-  let h = 0x811c9dc5;
-  for (let i = 0; i < name.length; i++) h = Math.imul(h ^ name.charCodeAt(i), 0x01000193) >>> 0;
-  return `tag-${h.toString(36)}`;
-}
 
 export async function listTags(db: D1Database, siteId: number): Promise<Tag[]> {
   const { results } = await db

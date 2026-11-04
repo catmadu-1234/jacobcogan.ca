@@ -96,4 +96,14 @@ describe("createAutosave", () => {
     expect(save).toHaveBeenLastCalledWith({ title: "new", visible: true });
     expect(auto.state.get()).toBe("saved");
   });
+
+  it("combines queued patches with a custom merge, so nested changes are not lost", async () => {
+    type T = { theme?: { preset?: string; accent?: string } };
+    const save = vi.fn<(p: T) => Promise<void>>().mockResolvedValue();
+    const auto = createAutosave<T>(save, 800, (a, b) => ({ theme: { ...a.theme, ...b.theme } }));
+    auto.queue({ theme: { preset: "serif" } });
+    auto.queue({ theme: { accent: "#7a3e2e" } });
+    await vi.advanceTimersByTimeAsync(800);
+    expect(save).toHaveBeenCalledExactlyOnceWith({ theme: { preset: "serif", accent: "#7a3e2e" } });
+  });
 });
