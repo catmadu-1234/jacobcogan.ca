@@ -7,7 +7,7 @@
     "build": "vite build",
     "test": "vitest run && vitest run --config vitest.app.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.app.json",
-    "deploy": "vite build && wrangler deploy"
+    "deploy:worker": "vite build && wrangler deploy"
   },
   "dependencies": {
     "@senka/core": "workspace:*",

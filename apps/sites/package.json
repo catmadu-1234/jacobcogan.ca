@@ -8,7 +8,7 @@
     "preview": "astro preview",
     "test": "vitest run",
     "typecheck": "astro check && tsc --noEmit -p tsconfig.test.json",
-    "deploy": "astro build && wrangler deploy"
+    "deploy:worker": "astro build && wrangler deploy"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.4.4",
