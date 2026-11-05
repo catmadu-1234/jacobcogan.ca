@@ -1,13 +1,14 @@
 import { ArrowLeft, Images } from "lucide-react";
 import { thumbUrl } from "../lib/media";
 import { useDragReorder } from "../lib/useDragReorder";
-import { useEditor } from "../lib/useEditor";
+import { FACET_HELP } from "../lib/facetHelp";
+import { useEditor, yearProblem } from "../lib/useEditor";
 import { Button } from "../components/Button";
 import { EmptyState } from "../components/EmptyState";
 import { MediaTile } from "../components/MediaTile";
 import { SaveIndicator } from "../components/SaveIndicator";
 import { Switch } from "../components/Switch";
-import { TagInput } from "../components/TagInput";
+import { FacetField } from "../components/FacetField";
 import { TextField } from "../components/TextField";
 import { UploadZone } from "../components/UploadZone";
 import styles from "./Editor.module.css";
@@ -36,6 +37,9 @@ export function Editor({ id }: Props) {
   const coverId = readyMedia.find((m) => m.id === ed.coverMediaId)?.id ?? readyMedia[0]?.id;
   const activeUploads = ed.uploads.filter((u) => u.state !== "done");
   const canReorder = reorder.shown.length > 1;
+  const yearDef = ed.defs.find((d) => d.key === "year");
+  const dimensionsDef = ed.defs.find((d) => d.key === "dimensions");
+  const otherDefs = ed.defs.filter((d) => d.key !== "year" && d.key !== "dimensions" && d.key !== "medium" && d.key !== "project");
 
   return (
     <div className={styles.page}>
@@ -127,36 +131,58 @@ export function Editor({ id }: Props) {
         <TextField label="Title" value={ed.title} onChange={ed.changeTitle} maxLength={200} placeholder="Untitled" />
       </section>
 
-      <section className={styles.section} aria-labelledby="details-heading">
-        <h2 id="details-heading" className={styles.heading}>
-          Details
+      <section className={styles.section} aria-labelledby="catalogue-heading">
+        <h2 id="catalogue-heading" className={styles.heading}>
+          Catalogue
         </h2>
-        {ed.defs.length === 0 ? (
-          <p className={styles.hint}>
-            Add details like Medium or Year for every work in <a href="#/settings">Settings</a>.
-          </p>
-        ) : null}
-        {ed.defs.map((d) => (
+        <FacetField facet="medium" label="Medium" example="Oil on linen" values={ed.facets.medium} suggestions={ed.allFacets.medium} onChange={(v) => ed.changeFacet("medium", v)} />
+        <FacetField facet="project" label="Project" example="Harbour Series" values={ed.facets.project} suggestions={ed.allFacets.project} onChange={(v) => ed.changeFacet("project", v)} />
+        <FacetField facet="content" label="Content" example="Landscapes" values={ed.facets.content} suggestions={ed.allFacets.content} onChange={(v) => ed.changeFacet("content", v)} />
+        <FacetField facet="exhibition" label="Exhibition" example="Spring Show 2025" values={ed.facets.exhibition} suggestions={ed.allFacets.exhibition} onChange={(v) => ed.changeFacet("exhibition", v)} />
+        {yearDef ? (
           <TextField
-            key={d.key}
-            label={d.label}
-            value={ed.fields[d.key] ?? ""}
-            onChange={(v) => ed.changeField(d.key, v)}
-            multiline={d.type === "longtext"}
-            type={d.type === "url" ? "url" : "text"}
-            required={d.required}
-            error={ed.notice && d.required && !(ed.fields[d.key] ?? "").trim() ? "Needed to show this work on your site." : undefined}
-            maxLength={10000}
+            label={yearDef.label}
+            info={FACET_HELP.year}
+            value={ed.fields.year ?? ""}
+            onChange={(v) => ed.changeField("year", v)}
+            inputMode="numeric"
+            maxLength={4}
+            placeholder="2024"
+            error={yearProblem(ed.fields.year ?? "") || undefined}
           />
-        ))}
+        ) : null}
+        {dimensionsDef ? (
+          <TextField
+            label={dimensionsDef.label}
+            info={FACET_HELP.dimensions}
+            value={ed.fields.dimensions ?? ""}
+            onChange={(v) => ed.changeField("dimensions", v)}
+            placeholder={'24 × 36 in'}
+            maxLength={200}
+          />
+        ) : null}
       </section>
 
-      <section className={styles.section} aria-labelledby="tags-heading">
-        <h2 id="tags-heading" className={styles.heading}>
-          Tags
-        </h2>
-        <TagInput tags={ed.tags} suggestions={ed.allTags} onChange={ed.changeTags} />
-      </section>
+      {otherDefs.length > 0 ? (
+        <section className={styles.section} aria-labelledby="details-heading">
+          <h2 id="details-heading" className={styles.heading}>
+            Details
+          </h2>
+          {otherDefs.map((d) => (
+            <TextField
+              key={d.key}
+              label={d.label}
+              value={ed.fields[d.key] ?? ""}
+              onChange={(v) => ed.changeField(d.key, v)}
+              multiline={d.type === "longtext"}
+              type={d.type === "url" ? "url" : "text"}
+              required={d.required}
+              error={ed.notice && d.required && !(ed.fields[d.key] ?? "").trim() ? "Needed to show this work on your site." : undefined}
+              maxLength={10000}
+            />
+          ))}
+        </section>
+      ) : null}
 
       <section className={styles.danger}>
         <Button variant="secondary" onClick={() => void ed.deleteWork()}>

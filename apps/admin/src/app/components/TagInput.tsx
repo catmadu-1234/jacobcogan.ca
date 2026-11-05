@@ -7,9 +7,13 @@ interface Props {
   tags: string[];
   suggestions: string[];
   onChange: (tags: string[]) => void;
+  /** What each value is called, e.g. "medium". Defaults to "tag". */
+  noun?: string;
+  /** An example shown in the empty box. */
+  example?: string;
 }
 
-export function TagInput({ tags, suggestions, onChange }: Props) {
+export function TagInput({ tags, suggestions, onChange, noun = "tag", example = "Painting" }: Props) {
   const id = useId();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(-1);
@@ -50,7 +54,7 @@ export function TagInput({ tags, suggestions, onChange }: Props) {
         {tags.map((t) => (
           <span key={t} className={styles.chip}>
             {t}
-            <button type="button" className={styles.remove} aria-label={`Remove tag ${t}`} onClick={() => onChange(tags.filter((x) => x !== t))}>
+            <button type="button" className={styles.remove} aria-label={`Remove ${noun} ${t}`} onClick={() => onChange(tags.filter((x) => x !== t))}>
               <X size={14} aria-hidden="true" />
             </button>
           </span>
@@ -59,13 +63,13 @@ export function TagInput({ tags, suggestions, onChange }: Props) {
           ref={inputRef}
           className={styles.input}
           role="combobox"
-          aria-label="Add a tag"
+          aria-label={`Add a ${noun}`}
           aria-expanded={open && options.length > 0}
           aria-controls={`${id}-list`}
           aria-activedescendant={active >= 0 ? `${id}-opt-${active}` : undefined}
           autoComplete="off"
           disabled={full}
-          placeholder={full ? "That's the maximum of 20 tags" : tags.length ? "" : "Add a tag, e.g. Painting"}
+          placeholder={full ? `That's the maximum of 20 ${noun}s` : tags.length ? "" : `Add a ${noun}, e.g. ${example}`}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);

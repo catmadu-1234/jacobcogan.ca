@@ -21,7 +21,7 @@ describe("works API", () => {
     const read = (await (await call(A, "GET", `/api/works/${w.id}`)).json()) as any;
     expect(read.work.slug).toBe("blue-hour");
     expect(read.media).toEqual([]);
-    expect(read.tags).toEqual([]);
+    expect(read.facets).toEqual({ medium: [], project: [], content: [], exhibition: [] });
   });
 
   it("returns 409 with the current work for a stale save and keeps the stored data", async () => {
@@ -46,11 +46,15 @@ describe("works API", () => {
     expect(((await (await call(A, "GET", `/api/works/${w.id}`)).json()) as any).work.title).toBe("");
   });
 
-  it("saves tags with the work and returns them", async () => {
+  it("saves facet values with the work and returns them", async () => {
     await seedTwoSites();
     const w = await newWork();
-    const res = await call(A, "PATCH", `/api/works/${w.id}`, { tags: ["Oil", "Paper"], expectedUpdatedAt: w.updatedAt });
-    expect(((await res.json()) as any).tags.map((t: any) => t.name)).toEqual(["Oil", "Paper"]);
+    const res = await call(A, "PATCH", `/api/works/${w.id}`, { facets: { medium: ["Oil", "Paper"], content: ["Dogs"] }, expectedUpdatedAt: w.updatedAt });
+    const body = (await res.json()) as any;
+    expect(body.facets.medium.map((t: any) => t.name)).toEqual(["Oil", "Paper"]);
+    expect(body.facets.content.map((t: any) => t.name)).toEqual(["Dogs"]);
+    const suggestions = (await (await call(A, "GET", "/api/facets")).json()) as any;
+    expect(suggestions.medium.map((t: any) => t.name)).toEqual(["Oil", "Paper"]);
   });
 
   it("bumps the site content version on successful writes only", async () => {
@@ -122,16 +126,24 @@ describe("works API", () => {
     expect(list[0].cover.id).toBe(m2.id);
   });
 
-  it("filters the list by search text and tag", async () => {
+  it("filters the list by search text", async () => {
     await seedTwoSites();
     const one = await newWork();
     const two = await newWork();
-    await call(A, "PATCH", `/api/works/${one.id}`, { title: "Blue Hour", tags: ["Oil"], expectedUpdatedAt: one.updatedAt });
+    await call(A, "PATCH", `/api/works/${one.id}`, { title: "Blue Hour", expectedUpdatedAt: one.updatedAt });
     await call(A, "PATCH", `/api/works/${two.id}`, { title: "Red Study", expectedUpdatedAt: two.updatedAt });
     const byText = (await (await call(A, "GET", "/api/works?q=blue")).json()) as any[];
     expect(byText.map((w) => w.title)).toEqual(["Blue Hour"]);
-    const byTag = (await (await call(A, "GET", "/api/works?tag=oil")).json()) as any[];
-    expect(byTag.map((w) => w.title)).toEqual(["Blue Hour"]);
+  });
+
+  it("rejects a year that is not four digits, with the field named", async () => {
+    await seedTwoSites();
+    const w = await newWork();
+    const res = await call(A, "PATCH", `/api/works/${w.id}`, { fields: { year: "c. 2019" }, expectedUpdatedAt: w.updatedAt });
+    expect(res.status).toBe(400);
+    const body = (await res.json()) as any;
+    expect(body.error).toBe("invalid");
+    expect(body.issues[0].path).toBe("fields.year");
   });
 
   it("reorders works", async () => {

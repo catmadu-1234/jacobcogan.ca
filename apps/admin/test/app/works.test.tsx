@@ -16,7 +16,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("Works screen", () => {
   it("shows the friendly empty state with an add button", async () => {
-    vi.stubGlobal("fetch", reply({ "/api/works": [], "/api/tags": [] }));
+    vi.stubGlobal("fetch", reply({ "/api/works": [] }));
     const onAdd = vi.fn();
     render(<Works onAdd={onAdd} />);
     expect(await screen.findByText(/No works yet\. Add your first piece/)).toBeTruthy();
@@ -25,7 +25,7 @@ describe("Works screen", () => {
   });
 
   it("lists works and marks hidden ones", async () => {
-    vi.stubGlobal("fetch", reply({ "/api/works": [work(1, "Blue Hour", true), work(2, "Study in Ochre", false)], "/api/tags": [] }));
+    vi.stubGlobal("fetch", reply({ "/api/works": [work(1, "Blue Hour", true), work(2, "Study in Ochre", false)] }));
     render(<Works onAdd={() => {}} />);
     expect(await screen.findByText("Blue Hour")).toBeTruthy();
     expect(screen.getByText("Study in Ochre")).toBeTruthy();
@@ -33,7 +33,7 @@ describe("Works screen", () => {
   });
 
   it("shows untitled works with a readable name", async () => {
-    vi.stubGlobal("fetch", reply({ "/api/works": [work(3, "", false)], "/api/tags": [] }));
+    vi.stubGlobal("fetch", reply({ "/api/works": [work(3, "", false)] }));
     render(<Works onAdd={() => {}} />);
     expect(await screen.findByText("Untitled")).toBeTruthy();
   });

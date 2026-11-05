@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import {
-  IdList, WorkPatch, createWork, getWork, listFieldDefs, listMediaForWork, listReadyMediaForSite,
-  listWorks, reorderWorks, restoreWork, setWorkTags, softDeleteWork, tagsForWork, updateWork,
+  IdList, WorkPatch, createWork, facetsForWork, getWork, listFieldDefs, listMediaForWork, listReadyMediaForSite,
+  listWorks, reorderWorks, restoreWork, setWorkFacets, softDeleteWork, updateWork,
   type Media,
 } from "@senka/core";
 import type { AppEnv } from "../env";
@@ -12,7 +12,7 @@ export const workRoutes = new Hono<AppEnv>();
 workRoutes.get("/", async (c) => {
   const siteId = c.get("siteId");
   const [works, ready] = await Promise.all([
-    listWorks(c.env.DB, siteId, { q: c.req.query("q") || undefined, tagSlug: c.req.query("tag") || undefined }),
+    listWorks(c.env.DB, siteId, { q: c.req.query("q") || undefined }),
     listReadyMediaForSite(c.env.DB, siteId),
   ]);
   const byWork = new Map<number, Media[]>();
@@ -39,8 +39,8 @@ workRoutes.get("/:id", async (c) => {
   const siteId = c.get("siteId");
   const work = id === null ? null : await getWork(c.env.DB, siteId, id);
   if (!work) return notFound(c);
-  const [media, tags] = await Promise.all([listMediaForWork(c.env.DB, siteId, work.id), tagsForWork(c.env.DB, work.id)]);
-  return c.json({ work, media, tags });
+  const [media, facets] = await Promise.all([listMediaForWork(c.env.DB, siteId, work.id), facetsForWork(c.env.DB, work.id)]);
+  return c.json({ work, media, facets });
 });
 
 workRoutes.patch("/:id", async (c) => {
@@ -66,8 +66,8 @@ workRoutes.patch("/:id", async (c) => {
   const result = await updateWork(db, siteId, id, patch);
   if (result === null) return notFound(c);
   if (result === "conflict") return c.json({ error: "conflict", work: await getWork(db, siteId, id) }, 409);
-  if (patch.tags) await setWorkTags(db, siteId, id, patch.tags);
-  return c.json({ work: result, tags: await tagsForWork(db, id) });
+  if (patch.facets) await setWorkFacets(db, siteId, id, patch.facets);
+  return c.json({ work: result, facets: await facetsForWork(db, id) });
 });
 
 workRoutes.delete("/:id", async (c) => {

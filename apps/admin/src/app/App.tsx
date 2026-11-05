@@ -10,7 +10,6 @@ import { Editor } from "./screens/Editor";
 import { SidePicker } from "./screens/SidePicker";
 import { Settings } from "./screens/Settings";
 import { Studio } from "./screens/Studio";
-import { Tags } from "./screens/Tags";
 import { Works } from "./screens/Works";
 
 export function App() {
@@ -44,8 +43,6 @@ export function App() {
           <Editor key={route.params.id} id={Number(route.params.id)} />
         ) : route.name === "studio" ? (
           <Studio />
-        ) : route.name === "tags" ? (
-          <Tags />
         ) : (
           <Settings />
         )}

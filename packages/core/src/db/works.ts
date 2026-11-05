@@ -18,14 +18,9 @@ const rowToWork = (r: WorkRow): Work => ({
 export async function listWorks(
   db: D1Database,
   siteId: number,
-  opts: { q?: string; tagSlug?: string; kind?: Work["kind"] } = {},
+  opts: { q?: string; kind?: Work["kind"] } = {},
 ): Promise<Work[]> {
   const binds: unknown[] = [];
-  let join = "";
-  if (opts.tagSlug) {
-    join = "JOIN work_tags wt ON wt.work_id = w.id JOIN tags t ON t.id = wt.tag_id AND t.slug = ?";
-    binds.push(opts.tagSlug);
-  }
   const kind = opts.kind ?? "work";
   binds.push(siteId, kind);
   let where = "w.site_id = ? AND w.kind = ? AND w.deleted_at IS NULL";
@@ -35,7 +30,7 @@ export async function listWorks(
     binds.push(opts.q);
   }
   const { results } = await db
-    .prepare(`SELECT w.* FROM works w ${join} WHERE ${where} ORDER BY ${kind === "post" ? "w.created_at DESC" : "w.sort ASC"}, w.id DESC`)
+    .prepare(`SELECT w.* FROM works w WHERE ${where} ORDER BY ${kind === "post" ? "w.created_at DESC" : "w.sort ASC"}, w.id DESC`)
     .bind(...binds)
     .all<WorkRow>();
   return results.map(rowToWork);
@@ -153,6 +148,7 @@ export async function purgeDeletedWorks(db: D1Database, olderThanIso: string): P
     const marks = chunk.map(() => "?").join(",");
     await db.batch([
       db.prepare(`DELETE FROM media WHERE work_id IN (${marks})`).bind(...chunk),
+      db.prepare(`DELETE FROM work_facet_values WHERE work_id IN (${marks})`).bind(...chunk),
       db.prepare(`DELETE FROM work_tags WHERE work_id IN (${marks})`).bind(...chunk),
       db.prepare(`DELETE FROM works WHERE id IN (${marks})`).bind(...chunk),
     ]);

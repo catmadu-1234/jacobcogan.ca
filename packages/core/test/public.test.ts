@@ -86,21 +86,13 @@ describe("public works", () => {
     ]);
   });
 
-  it("shows only ready media, picks a cover and exposes tags", async () => {
+  it("shows only ready media, picks a cover and exposes facets", async () => {
     const { a } = await seedTwoSites(db());
-    await addWork(db(), a, { title: "W", tags: ["Oil"], media: [{ ready: false }, { ready: true }] });
+    await addWork(db(), a, { title: "W", facets: { medium: ["Oil"], content: ["Dogs"] }, media: [{ ready: false }, { ready: true }] });
     const [w] = await listPublicWorks(db(), await site(a), "/media");
     expect(w!.media).toHaveLength(1);
     expect(w!.cover).toEqual(w!.media[0]);
-    expect(w!.tags).toEqual([{ name: "Oil", slug: "oil" }]);
-  });
-
-  it("filters by tag slug", async () => {
-    const { a } = await seedTwoSites(db());
-    await addWork(db(), a, { title: "Painted", tags: ["Painting"] });
-    await addWork(db(), a, { title: "Drawn", tags: ["Drawing"] });
-    const list = await listPublicWorks(db(), await site(a), "/media", { tagSlug: "drawing" });
-    expect(list.map((w) => w.title)).toEqual(["Drawn"]);
+    expect(w!.facets).toEqual({ medium: [{ name: "Oil", slug: "oil" }], project: [], content: [{ name: "Dogs", slug: "dogs" }], exhibition: [] });
   });
 
   it("links previous and next in list order", async () => {

@@ -31,7 +31,11 @@ export interface Media {
   duration: number | null; color: string | null; alt: string; variants: MediaVariant[];
   bytes: number; sort: number; createdAt: string;
 }
-export interface Tag { id: number; siteId: number; name: string; slug: string; count?: number }
+/** The four tag-style facets a work can be catalogued by (Year and Dimensions are plain details). */
+export const FACETS = ["medium", "project", "content", "exhibition"] as const;
+export type Facet = (typeof FACETS)[number];
+export const FACET_LABELS: Record<Facet, string> = { medium: "Medium", project: "Project", content: "Content", exhibition: "Exhibition" };
+export interface FacetValue { id: number; siteId: number; facet: Facet; name: string; slug: string; count?: number }
 
 export const DEFAULT_THEME: ThemeConfig = {
   preset: "grotesk", accent: "#141414", rowHeight: 320, showIndexCaptions: false,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FieldDef, Media, Tag, Work } from "@senka/core/types";
+import { FACETS, type Facet, type FacetValue, type FieldDef, type Media, type Work } from "@senka/core/types";
+import { YEAR_PATTERN } from "@senka/core/validate";
 import { ApiError, api, sendDelete } from "./api";
 import { useAutosave } from "./autosave";
 import { createPendingDeletes } from "./pendingDeletes";
@@ -11,13 +12,18 @@ import { createUploader } from "./upload/uploader";
 interface WorkResponse {
   work: Work;
   media: Media[];
-  tags: Tag[];
+  facets: Record<Facet, FacetValue[]>;
 }
+type FacetNames = Record<Facet, string[]>;
+const emptyNames = (): FacetNames => ({ medium: [], project: [], content: [], exhibition: [] });
+const namesOf = (map: Record<Facet, FacetValue[]>): FacetNames => Object.fromEntries(FACETS.map((f) => [f, map[f].map((v) => v.name)])) as FacetNames;
+/** What to tell the artist when a Year is not four digits; empty when it is fine. */
+export const yearProblem = (year: string): string => (year.trim() && !YEAR_PATTERN.test(year.trim()) ? "Use four digits, like 2024. It won't save until it does." : "");
 export interface EditPatch {
   title?: string;
   visible?: boolean;
   fields?: Record<string, string>;
-  tags?: string[];
+  facets?: Partial<FacetNames>;
   coverMediaId?: number | null;
 }
 export type EditorStatus = "loading" | "ready" | "missing" | "error";
@@ -28,14 +34,16 @@ export function useEditor(id: number) {
   const [title, setTitle] = useState("");
   const [visible, setVisible] = useState(false);
   const [fields, setFields] = useState<Record<string, string>>({});
-  const [tags, setTags] = useState<string[]>([]);
+  const [facets, setFacets] = useState<FacetNames>(emptyNames());
   const [coverMediaId, setCoverMediaId] = useState<number | null>(null);
   const [media, setMedia] = useState<Media[]>([]);
   const [defs, setDefs] = useState<FieldDef[]>([]);
-  const [allTags, setAllTags] = useState<string[]>([]);
+  const [allFacets, setAllFacets] = useState<FacetNames>(emptyNames());
   const [notice, setNotice] = useState<string | null>(null);
   const [editingAlt, setEditingAlt] = useState<number | null>(null);
   const updatedAt = useRef("");
+  /** The last Year that was valid, so an unfinished one is never sent to the server. */
+  const savedYear = useRef("");
 
   useEffect(() => {
     let cancelled = false;
@@ -43,19 +51,20 @@ export function useEditor(id: number) {
     Promise.all([
       api<WorkResponse>("GET", `/api/works/${id}`),
       api<FieldDef[]>("GET", "/api/fields"),
-      api<Tag[]>("GET", "/api/tags"),
+      api<Record<Facet, FacetValue[]>>("GET", "/api/facets"),
     ])
-      .then(([res, fieldDefs, tagList]) => {
+      .then(([res, fieldDefs, facetList]) => {
         if (cancelled) return;
         updatedAt.current = res.work.updatedAt;
         setTitle(res.work.title);
         setVisible(res.work.visible);
         setFields(res.work.fields);
-        setTags(res.tags.map((t) => t.name));
+        setFacets(namesOf(res.facets));
+        savedYear.current = res.work.fields.year ?? "";
         setCoverMediaId(res.work.coverMediaId);
         setMedia(res.media);
         setDefs(fieldDefs.filter((d) => !d.archived));
-        setAllTags(tagList.map((t) => t.name));
+        setAllFacets(namesOf(facetList));
         setStatus("ready");
       })
       .catch((err) => !cancelled && setStatus(err instanceof ApiError && err.status === 404 ? "missing" : "error"));
@@ -162,11 +171,17 @@ export function useEditor(id: number) {
     const next = { ...fields, [key]: value };
     setFields(next);
     setNotice(null);
-    autosave.queue({ fields: next });
+    if (key === "year" && !yearProblem(value)) savedYear.current = value.trim();
+    // Only a finished Year is sent: while it is half typed, the last good one goes along with the other details.
+    const sendable = yearProblem(next.year ?? "") ? { ...next, year: savedYear.current } : next;
+    if (key === "year" && yearProblem(value)) return;
+    autosave.queue({ fields: sendable });
   }
-  function changeTags(next: string[]) {
-    setTags(next);
-    autosave.queue({ tags: next });
+  function changeFacet(facet: Facet, next: string[]) {
+    // The whole set goes each time: queued patches merge shallowly, so a partial one would drop earlier edits.
+    const all = { ...facets, [facet]: next };
+    setFacets(all);
+    autosave.queue({ facets: all });
   }
   function changeVisible(next: boolean) {
     setVisible(next);
@@ -196,10 +211,10 @@ export function useEditor(id: number) {
   }
 
   return {
-    status, title, visible, fields, tags, coverMediaId, media, defs, allTags, notice, editingAlt, setEditingAlt,
+    status, title, visible, fields, facets, coverMediaId, media, defs, allFacets, notice, editingAlt, setEditingAlt,
     saveState: state, saveReason: reason, retrySave: () => autosave.retry(),
     uploader, uploads,
-    changeTitle, changeField, changeTags, changeVisible, changeCover,
+    changeTitle, changeField, changeFacet, changeVisible, changeCover,
     reorderMedia, saveAlt, removeMedia, deleteWork,
   };
 }

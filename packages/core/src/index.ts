@@ -5,6 +5,6 @@ export * from "./db/sites";
 export * from "./db/fields";
 export * from "./db/works";
 export * from "./db/media";
-export * from "./db/tags";
+export * from "./db/facets";
 export * from "./public";
 export * from "./range";
