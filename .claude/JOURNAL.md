@@ -1,5 +1,14 @@
 # Journal — senka
 
+## 2026-11-05 18:26 EST (branch: feat/senka-cms)
+- Updated test fixtures and filter tests across sites package for new facet data shape
+- Fixed UI test suite to build works from facets instead of old details model
+- Implemented data migration tasks (backfill script, demo seed updates, schema changes)
+- Deployed admin worker and core database migration; sites app deployment in progress
+
+Next: Verify sites deployment completion and run final production checks for cataloguing facets feature.
+
+
 ## 2026-11-05 17:51 EST (branch: feat/senka-cms)
 If you'd rather skip the questions and have me just start, say so and I'll go with sensible defaults.
 
