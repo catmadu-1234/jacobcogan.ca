@@ -19,7 +19,7 @@ export function Shell({ siteName, openSides, route, onAdd, children }: Props) {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <a className={styles.brand} href="#/works">
-          senka
+          ArtMS
           <span>{siteName}</span>
         </a>
         <Button onClick={onAdd}>

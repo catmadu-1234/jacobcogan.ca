@@ -1,4 +1,4 @@
-# Senka — project rules
+# ArtMS — project rules
 
 Two Cloudflare Workers (`apps/admin`, `apps/sites`) share one D1 database and one R2 bucket; all SQL lives in `packages/core`.
 Plan: `docs/superpowers/plans/2026-11-03-senka-cms.md`. Design: `docs/design-spec.md`.

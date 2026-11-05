@@ -1,4 +1,4 @@
-# Putting Senka online
+# Putting ArtMS online
 
 Everything runs on Cloudflare's free plan. When you're done there are two live addresses:
 

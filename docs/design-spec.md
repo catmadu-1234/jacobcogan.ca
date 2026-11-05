@@ -1,4 +1,4 @@
-# Design Spec: Senka CMS + White-Wall Gallery
+# Design Spec: ArtMS + White-Wall Gallery
 
 Personal project. Not Habitat Learn branded.
 

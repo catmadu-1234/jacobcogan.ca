@@ -1,4 +1,4 @@
-# Senka
+# ArtMS
 
 A small publishing tool for two art portfolios. Each artist signs in to the **admin**, adds works (images or videos, their own detail fields, tags) and flips them to **Visible on site**. Each artist has a fast, quiet **gallery site** that shows whatever is visible.
 

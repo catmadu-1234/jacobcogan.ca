@@ -18,7 +18,7 @@ export function SidePicker() {
 
   return (
     <main className={styles.page}>
-      <p className={styles.brand}>senka</p>
+      <p className={styles.brand}>ArtMS</p>
       <h1 className={styles.title}>Whose side?</h1>
       <p className={styles.lede}>Pick the site you want to work on. This device will remember it.</p>
       <ul className={styles.sides}>
