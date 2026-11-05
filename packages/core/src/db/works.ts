@@ -14,7 +14,6 @@ const rowToWork = (r: WorkRow): Work => ({
   createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, kind: r.kind, body: r.body,
 });
 
-const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 
 export async function listWorks(
   db: D1Database,
@@ -31,8 +30,9 @@ export async function listWorks(
   binds.push(siteId, kind);
   let where = "w.site_id = ? AND w.kind = ? AND w.deleted_at IS NULL";
   if (opts.q) {
-    where += " AND w.title LIKE ? ESCAPE '\\'";
-    binds.push(`%${escapeLike(opts.q)}%`);
+    // instr, not LIKE: D1 rejects LIKE patterns longer than about 50 bytes.
+    where += " AND instr(lower(w.title), lower(?)) > 0";
+    binds.push(opts.q);
   }
   const { results } = await db
     .prepare(`SELECT w.* FROM works w ${join} WHERE ${where} ORDER BY ${kind === "post" ? "w.created_at DESC" : "w.sort ASC"}, w.id DESC`)
@@ -63,8 +63,10 @@ export async function createWork(db: D1Database, siteId: number, kind: Work["kin
 
 async function uniqueSlug(db: D1Database, siteId: number, base: string, excludeId: number): Promise<string> {
   const { results } = await db
-    .prepare("SELECT slug FROM works WHERE site_id = ? AND id != ? AND (slug = ? OR slug LIKE ? ESCAPE '\\')")
-    .bind(siteId, excludeId, base, `${escapeLike(base)}-%`)
+    // Slugs only hold a-z, 0-9 and "-", so everything starting with "base-" sorts between "base-" and "base.".
+    // A range instead of LIKE: D1 rejects LIKE patterns longer than about 50 bytes, and a slug can be 80.
+    .prepare("SELECT slug FROM works WHERE site_id = ? AND id != ? AND (slug = ? OR (slug >= ? AND slug < ?))")
+    .bind(siteId, excludeId, base, `${base}-`, `${base}.`)
     .all<{ slug: string }>();
   const taken = new Set(results.map((r) => r.slug));
   let slug = base;

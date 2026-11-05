@@ -31,6 +31,16 @@ describe("works", () => {
     expect(two.slug).toBe("blue-hour-2");
   });
 
+  it("handles long titles and long searches, and still finds taken slugs by prefix", async () => {
+    const { a } = await seedTwoSites(db());
+    const long = "A very long title for a painting that goes on and on and on forever";
+    const one = await titled(a, long);
+    const two = await titled(a, long);
+    expect(one.slug.length).toBeGreaterThan(50);
+    expect(two.slug).toBe(`${one.slug}-2`);
+    expect((await listWorks(db(), a, { q: long.toUpperCase() })).map((w) => w.id).sort()).toEqual([one.id, two.id].sort());
+  });
+
   it("keeps a work's URL stable once it has a real title, even one that looks like the placeholder", async () => {
     const { a } = await seedTwoSites(db());
     const w = await createWork(db(), a);
