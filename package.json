@@ -3,11 +3,15 @@
   "private": true,
   "packageManager": "pnpm@11.1.1",
   "scripts": {
-    "test": "pnpm -r test",
+    "test": "pnpm -r test && pnpm test:scripts",
     "typecheck": "pnpm -r typecheck",
     "build": "pnpm -r build",
     "seed:demo": "node scripts/seed-demo.mjs",
     "dev:admin": "pnpm --filter admin dev",
-    "dev:sites": "pnpm --filter sites dev"
+    "dev:sites": "pnpm --filter sites dev",
+    "test:scripts": "node --test \"scripts/**/*.test.mjs\""
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }

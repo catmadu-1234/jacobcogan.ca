@@ -3,8 +3,8 @@
 -- one-off command. (`pnpm seed:demo` adds sign-in users for local development only.)
 
 INSERT OR IGNORE INTO sites (id, slug, name, theme_json) VALUES
-  (1, 'site-a', 'Site A', '{"preset":"grotesk"}'),
-  (2, 'site-b', 'Site B', '{"preset":"serif-title","accent":"#7A3E2E"}');
+  (1, 'site-a', 'Site A', '{"preset":"grotesk","accent":"#E4452D"}'),
+  (2, 'site-b', 'Site B', '{"preset":"serif-title","accent":"#C2693F"}');
 
 INSERT OR IGNORE INTO field_defs (site_id, key, label, type, required, sort) VALUES
   (1, 'medium',       'Medium',       'text',     0, 1),
