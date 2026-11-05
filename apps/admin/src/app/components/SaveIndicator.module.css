@@ -1,7 +1,8 @@
 .indicator {
   color: var(--muted);
   font-size: var(--text-sm);
-  white-space: nowrap;
+  max-width: 36ch;
+  text-align: right;
 }
 .problem {
   color: var(--danger);

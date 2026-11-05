@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { ApiError } from "./api";
+import { saveErrorMessage } from "./saveErrorMessage";
 import { createStore, useStore, type Store } from "./store";
 
 export type SaveState = "saved" | "saving" | "error" | "offline" | "conflict";
@@ -22,6 +23,8 @@ export function createAutosave<T extends object>(
   merge: (older: Partial<T>, newer: Partial<T>) => Partial<T> = (a, b) => ({ ...a, ...b }),
 ) {
   const state: Store<SaveState> = createStore<SaveState>("saved");
+  /** Why the last save failed, in plain language; empty when it hasn't. */
+  const reason: Store<string> = createStore<string>("");
   let pending: Partial<T> | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let inFlight: Promise<void> | null = null;
@@ -40,12 +43,14 @@ export function createAutosave<T extends object>(
     const patch = pending;
     pending = null;
     state.set("saving");
+    reason.set("");
     inFlight = (async () => {
       try {
         await save(patch);
       } catch (err) {
         pending = pending ? merge(patch, pending) : patch;
         const next = classify(err);
+        reason.set(saveErrorMessage(err));
         state.set(next);
         if (next === "offline") window.addEventListener("online", onOnline, { once: true });
       }
@@ -59,6 +64,7 @@ export function createAutosave<T extends object>(
 
   return {
     state,
+    reason,
     queue(patch: Partial<T>): void {
       pending = pending ? merge(pending, patch) : patch;
       if (state.get() === "conflict") return;
@@ -85,5 +91,5 @@ export function useAutosave<T extends object>(
   saveRef.current = save;
   const autosave = useMemo(() => createAutosave<T>((p) => saveRef.current(p), delayMs, merge), [delayMs, merge]);
   useEffect(() => () => void autosave.flush(), [autosave]);
-  return { autosave, state: useStore(autosave.state) };
+  return { autosave, state: useStore(autosave.state), reason: useStore(autosave.reason) };
 }

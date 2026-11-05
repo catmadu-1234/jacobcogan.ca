@@ -16,7 +16,7 @@ const SITES_ORIGIN = ((import.meta.env.VITE_SITES_ORIGIN as string | undefined) 
 
 export function Settings() {
   const me = useStore(meStore);
-  const { autosave, state } = useAutosave<SitePatch>(
+  const { autosave, state, reason } = useAutosave<SitePatch>(
     async (patch) => updateMeSite(await api<Site>("PATCH", "/api/site", patch)),
     undefined,
     mergeSitePatch,
@@ -28,7 +28,7 @@ export function Settings() {
     <div className={styles.page}>
       <header className={styles.heading}>
         <h1 className={styles.title}>Settings</h1>
-        <SaveIndicator state={state} onRetry={() => autosave.retry()} />
+        <SaveIndicator state={state} reason={reason} onRetry={() => autosave.retry()} />
       </header>
       <a className={styles.visit} href={`${SITES_ORIGIN}/${site.slug}`} target="_blank" rel="noopener noreferrer">
         Open my site <ExternalLink size={16} aria-hidden="true" />

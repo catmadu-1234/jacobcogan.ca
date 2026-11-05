@@ -43,7 +43,7 @@ export function Editor({ id }: Props) {
         <a className={styles.back} href="#/works">
           <ArrowLeft size={18} aria-hidden="true" /> Works
         </a>
-        <SaveIndicator state={ed.saveState} onRetry={ed.retrySave} />
+        <SaveIndicator state={ed.saveState} reason={ed.saveReason} onRetry={ed.retrySave} />
         <Switch label="Visible on site" checked={ed.visible} onChange={ed.changeVisible} />
       </header>
 

@@ -64,7 +64,7 @@ export function useEditor(id: number) {
     };
   }, [id]);
 
-  const { autosave, state } = useAutosave<EditPatch>(async (patch) => {
+  const { autosave, state, reason } = useAutosave<EditPatch>(async (patch) => {
     const send = (body: EditPatch) =>
       api<{ work: Work }>("PATCH", `/api/works/${id}`, { ...body, expectedUpdatedAt: updatedAt.current });
     let res: { work: Work };
@@ -197,7 +197,7 @@ export function useEditor(id: number) {
 
   return {
     status, title, visible, fields, tags, coverMediaId, media, defs, allTags, notice, editingAlt, setEditingAlt,
-    saveState: state, retrySave: () => autosave.retry(),
+    saveState: state, saveReason: reason, retrySave: () => autosave.retry(),
     uploader, uploads,
     changeTitle, changeField, changeTags, changeVisible, changeCover,
     reorderMedia, saveAlt, removeMedia, deleteWork,
