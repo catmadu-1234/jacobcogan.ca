@@ -1,0 +1,28 @@
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4) var(--space-6);
+  margin-top: var(--space-9);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--hair);
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.top {
+  margin-left: auto;
+}
+.footer a:hover {
+  color: var(--accent-text);
+}

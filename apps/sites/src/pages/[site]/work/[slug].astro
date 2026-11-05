@@ -1,7 +1,8 @@
 ---
 import { env } from "cloudflare:workers";
-import { getPublicWork } from "@senka/core";
+import { listPublicWorks } from "@senka/core";
 import Gallery from "../../../layouts/Gallery.astro";
+import { neighbours } from "../../../lib/meta";
 import { describe, siteForPage } from "../../../lib/page";
 import { WorkPage } from "../../../ui/WorkPage";
 
@@ -9,9 +10,9 @@ export const prerender = false;
 const site = await siteForPage(Astro.locals.site, Astro.params.site, env.DB);
 if (!site) return Astro.rewrite("/404");
 
-const found = await getPublicWork(env.DB, site, Astro.params.slug ?? "", env.MEDIA_BASE);
+const found = neighbours(await listPublicWorks(env.DB, site, env.MEDIA_BASE), Astro.params.slug ?? "");
 if (!found) return Astro.rewrite("/404");
-const { work, prev, next } = found;
+const { work, prev, next, wrapped } = found;
 const summary = work.details.map((d) => `${d.label}: ${d.value}`).join(" · ");
 ---
 
@@ -22,5 +23,5 @@ const summary = work.details.map((d) => `${d.label}: ${d.value}`).join(" · ");
   image={work.cover?.src}
   interactive
 >
-  <WorkPage siteName={site.name} basePath={Astro.locals.basePath} work={work} prev={prev} next={next} />
+  <WorkPage siteName={site.name} basePath={Astro.locals.basePath} work={work} prev={prev} next={next} wrapped={wrapped} links={site.links} />
 </Gallery>

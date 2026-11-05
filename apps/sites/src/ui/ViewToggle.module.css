@@ -1,0 +1,24 @@
+.toggle {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: 3px;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  font-family: var(--font-meta);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.toggle a {
+  padding: var(--space-1) var(--space-4);
+  border-radius: 999px;
+  color: var(--muted);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.toggle a:hover {
+  color: var(--ink);
+}
+.toggle a[aria-current="page"] {
+  background: var(--ink);
+  color: var(--wall);
+}

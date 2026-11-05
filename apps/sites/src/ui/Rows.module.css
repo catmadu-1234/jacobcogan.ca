@@ -25,8 +25,12 @@
   background-color: var(--bg);
   view-transition-name: var(--vt);
 }
+.item[hidden] {
+  display: none;
+}
 .link {
   display: block;
+  overflow: hidden;
   width: 100%;
   height: 100%;
 }
@@ -34,6 +38,50 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 700ms var(--ease), filter 700ms var(--ease);
+}
+.number {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  padding: 2px var(--space-2);
+  background: var(--wall);
+  color: var(--ink);
+  font-family: var(--font-meta);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+@media (hover: hover) {
+  .link:hover .img {
+    transform: scale(1.025);
+  }
+  .link:hover .number {
+    opacity: 1;
+    transform: none;
+  }
+}
+.link:focus-visible .number {
+  opacity: 1;
+  transform: none;
+}
+/* Pictures come up as they scroll in, where the browser can tie animation to scroll position. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .item {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
 }
 .caption {
   position: absolute;

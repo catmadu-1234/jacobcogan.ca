@@ -1,5 +1,6 @@
 import type { SiteLink } from "@senka/core/types";
 import { safeHttpUrl } from "../lib/url";
+import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import styles from "./AboutPage.module.css";
 
@@ -22,7 +23,7 @@ export function AboutPage({ siteName, basePath, about, links }: Props) {
       <main id="main" className={styles.main}>
         {paragraphs.length === 0 && safeLinks.length === 0 ? <p className={styles.empty}>Nothing here yet.</p> : null}
         {paragraphs.map((p, i) => (
-          <p key={i} className={styles.paragraph}>
+          <p key={i} className={i === 0 ? styles.lede : styles.paragraph}>
             {p}
           </p>
         ))}
@@ -38,6 +39,7 @@ export function AboutPage({ siteName, basePath, about, links }: Props) {
           </ul>
         ) : null}
       </main>
+      <SiteFooter siteName={siteName} basePath={basePath} links={[]} />
     </div>
   );
 }

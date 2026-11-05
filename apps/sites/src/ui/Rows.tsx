@@ -1,4 +1,6 @@
 import type { PublicWork } from "@senka/core";
+import { facetAttrs, facetsOf, matches, type Filters } from "../lib/filters";
+import { workNumber } from "../lib/meta";
 import { cssVars, rowItemVars } from "../lib/style";
 import styles from "./Rows.module.css";
 
@@ -7,11 +9,12 @@ interface Props {
   basePath: string;
   rowHeight: number;
   showCaptions: boolean;
+  filters?: Filters;
 }
 
 const EAGER_COUNT = 6;
 
-export function Rows({ works, basePath, rowHeight, showCaptions }: Props) {
+export function Rows({ works, basePath, rowHeight, showCaptions, filters = {} }: Props) {
   return (
     <ul className={styles.rows} data-captions={showCaptions ? "always" : "hover"}>
       {works.map((w, i) => {
@@ -22,7 +25,13 @@ export function Rows({ works, basePath, rowHeight, showCaptions }: Props) {
         const vars = rowItemVars(cover);
         const widthAtDesktop = Math.round(Number(vars["--ar"]) * rowHeight);
         return (
-          <li key={w.slug} className={styles.item} style={cssVars({ ...vars, "--vt": `work-${w.slug}` })}>
+          <li
+            key={w.slug}
+            className={styles.item}
+            {...facetAttrs(w)}
+            hidden={!matches(facetsOf(w), filters) || undefined}
+            style={cssVars({ ...vars, "--vt": `work-${w.slug}` })}
+          >
             <a className={styles.link} href={`${basePath}/work/${w.slug}`}>
               {src ? (
                 <img
@@ -38,6 +47,9 @@ export function Rows({ works, basePath, rowHeight, showCaptions }: Props) {
                   decoding="async"
                 />
               ) : null}
+              <span className={styles.number} aria-hidden="true">
+                {workNumber(i)}
+              </span>
               <span className={styles.caption} aria-hidden={showCaptions ? undefined : true}>
                 {w.title}
               </span>

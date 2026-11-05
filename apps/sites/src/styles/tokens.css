@@ -4,7 +4,11 @@
   --ink: #141414;
   --muted: #6b6b66; /* 5.3:1 on --wall */
   --hair: #e6e6e1;
-  --accent: #141414; /* overridden per site; used for focus, hover and links only */
+  --accent: #141414; /* overridden per site; used for focus, marks and hover */
+  /* The accent pulled toward the ink so small text in it keeps 4.5:1 or better on the wall. */
+  --accent-text: color-mix(in srgb, var(--accent) 78%, var(--ink));
+  --grain: 0.06;
+  --grain-blend: multiply;
 
   --space-1: 4px;
   --space-2: 8px;

@@ -68,7 +68,7 @@ describe("Settings: look and about autosave", () => {
   it("saves the chosen style", async () => {
     const calls = open();
     render(<Settings />);
-    fireEvent.click(await screen.findByRole("radio", { name: /Serif titles/ }));
+    fireEvent.click(await screen.findByRole("radio", { name: /Atelier/ }));
     await waitFor(() => expect(calls.some((c) => c.method === "PATCH" && c.path === "/api/site")).toBe(true), { timeout: 3000 });
     expect(calls.find((c) => c.path === "/api/site")!.body).toEqual({ theme: { preset: "serif-title" } });
   });

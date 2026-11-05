@@ -45,6 +45,18 @@ ul {
   padding: 0 var(--page-gutter) var(--space-8);
 }
 
+/* A fine film grain over everything, so flat colour feels like paper. It is a tiny inline SVG, drawn once. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: var(--grain-blend);
+  opacity: var(--grain);
+  pointer-events: none;
+}
+
 /* Smooth hand-off between the grid and a work's page, where the browser supports it. */
 @media (prefers-reduced-motion: no-preference) {
   @view-transition {
@@ -54,4 +66,45 @@ ul {
 ::view-transition-group(*) {
   animation-duration: 240ms;
   animation-timing-function: var(--ease);
+}
+
+/*
+ * Filtering in place. The script wraps the change in a view transition: tiles that stay glide to their new
+ * places, tiles that leave dissolve, tiles that arrive rise in a beat later. The page as a whole does not
+ * cross-fade (that was the flash), so everything else stays perfectly still.
+ */
+html.filtering::view-transition-old(root),
+html.filtering::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.filtering::view-transition-group(*) {
+  animation-duration: 620ms;
+  animation-timing-function: cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+html.filtering::view-transition-old(.tile) {
+  animation: tile-out 260ms var(--ease) both;
+}
+html.filtering::view-transition-new(.tile) {
+  animation: tile-in 520ms 160ms var(--ease) both;
+}
+@keyframes tile-out {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html.filtering::view-transition-group(*),
+  html.filtering::view-transition-old(*),
+  html.filtering::view-transition-new(*) {
+    animation-duration: 1ms;
+    animation-delay: 0s;
+  }
 }

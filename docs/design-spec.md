@@ -14,10 +14,10 @@ Fonts are self-hosted with `@fontsource-variable/*`, which serves them from the 
 | Use | Family | Package |
 |---|---|---|
 | Admin UI | Instrument Sans (variable) | `@fontsource-variable/instrument-sans` |
-| Gallery preset `grotesk` | Geist (body + titles), Geist Mono (metadata) | `@fontsource-variable/geist`, `@fontsource-variable/geist-mono` |
-| Gallery preset `serif-title` | Instrument Serif italic (titles), Instrument Sans (body) | `@fontsource/instrument-serif`, `@fontsource-variable/instrument-sans` |
+| Gallery preset `grotesk` (shown as **Studio**: light, Swiss/editorial) | Geist (body + titles), Geist Mono (metadata) | `@fontsource-variable/geist`, `@fontsource-variable/geist-mono` |
+| Gallery preset `serif-title` (shown as **Atelier**: dark, warm, literary) | Instrument Serif italic (titles), Instrument Sans (body) | `@fontsource/instrument-serif`, `@fontsource-variable/instrument-sans` |
 
-Each site picks a preset in `sites.theme_json`, so the two white-wall sites can look different without separate code.
+Each site picks a preset in `sites.theme_json`, so the two sites can look different without separate code.
 
 ### Base tokens (both apps)
 ```css
@@ -160,3 +160,10 @@ The defaults are: site-a uses `grotesk`, and site-b uses `serif-title` with acce
 | Autoplay video is distracting or uses mobile data | Autoplay only short muted clips, respect reduced-motion and use `preload` metadata for long clips. |
 | Off-white wall shifts how artwork colours look | #FAFAF8 is near-neutral (ΔE about 1 from white), and the lightbox uses the same wall colour. |
 | The research search suggested film grain and pixel art, which fit poorly | Rejected. The white-wall concept is the user's explicit choice. |
+
+### Gallery redesign (Studio / Atelier)
+- **Home:** oversized artist name, a slow marquee of the mediums, then a left-margin **filter rail** (Medium, Project, Year) beside a justified grid, with a Grid / Index toggle. Index view is a typographic list; a work's picture appears beside its row on hover. Below 960px the rail becomes a swipeable band of chips.
+- **Filters** are built from the work's details with the keys `medium`, `project` and `year`; tags filter through `?tag=` and appear on work pages. Counts are contextual. Every choice is a plain link to a server-rendered page (`?medium=oil&year=2024`), so filtering works without JavaScript.
+- **Filtering in place:** with JavaScript, a choice rearranges the tiles on the same page inside a View Transition (tiles glide, leavers dissolve, arrivals rise in a beat later; no whole-page cross-fade, which was the flash). Reduced motion applies the change at once.
+- **Work page:** sticky title and details beside the pictures, medium/project/year link back into the filtered gallery, and a full-bleed "Next work" finale (or "Back to the start" on the last).
+- **Atmosphere:** film grain, scroll-driven reveals, and a difference-blend header; all gated on `prefers-reduced-motion`.

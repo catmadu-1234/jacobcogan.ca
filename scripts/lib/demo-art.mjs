@@ -7,12 +7,12 @@ export const ART_STYLES = ["oil", "ink", "dusk", "bauhaus", "riso", "contour"];
 
 /** Sample details that suit each look: titles, the tag, and the medium. */
 export const STYLE_INFO = {
-  oil: { titles: ["Blue Hour", "Study in Ochre", "Window, Late"], tag: "Painting", medium: "Oil on linen" },
-  ink: { titles: ["Quiet Room", "Field Notes", "Two Chairs"], tag: "Drawing", medium: "Ink on paper" },
-  dusk: { titles: ["Harbour at Dusk", "Long Shore", "Last Light"], tag: "Photo", medium: "Digital photograph" },
-  bauhaus: { titles: ["Study for a Sun", "Counterweight", "Arc and Square"], tag: "Print", medium: "Gouache on board" },
-  riso: { titles: ["Salt", "Paper Moths", "Slow Weather"], tag: "Print", medium: "Risograph, two colours" },
-  contour: { titles: ["Tide Table", "Weather Map", "Inland Sea"], tag: "Drawing", medium: "Pen and watercolour" },
+  oil: { titles: ["Blue Hour", "Study in Ochre", "Window, Late"], tag: "Painting", medium: "Oil" },
+  ink: { titles: ["Quiet Room", "Field Notes", "Two Chairs"], tag: "Drawing", medium: "Ink" },
+  dusk: { titles: ["Harbour at Dusk", "Long Shore", "Last Light"], tag: "Photo", medium: "Photography" },
+  bauhaus: { titles: ["Study for a Sun", "Counterweight", "Arc and Square"], tag: "Print", medium: "Gouache" },
+  riso: { titles: ["Salt", "Paper Moths", "Slow Weather"], tag: "Print", medium: "Risograph" },
+  contour: { titles: ["Tide Table", "Weather Map", "Inland Sea"], tag: "Drawing", medium: "Watercolour" },
 };
 
 const RATIOS = [[3, 4], [4, 3], [1, 1], [16, 9], [2, 3], [3, 2], [9, 16], [21, 9], [4, 5]];

@@ -1,9 +1,22 @@
 .main {
   display: grid;
   gap: var(--space-5);
-  max-width: 60ch;
+  max-width: 62rem;
+  padding-top: var(--space-6);
+}
+.lede {
+  font-family: var(--font-title);
+  font-size: clamp(1.75rem, 4.5vw, 3.5rem);
+  font-style: var(--title-style);
+  font-weight: var(--title-weight);
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  text-wrap: balance;
+  white-space: pre-line;
 }
 .paragraph {
+  max-width: 60ch;
+  font-size: var(--text-md);
   line-height: 1.7;
   white-space: pre-line;
 }
@@ -22,5 +35,5 @@
   text-underline-offset: 3px;
 }
 .links a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }

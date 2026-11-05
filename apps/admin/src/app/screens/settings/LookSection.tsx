@@ -40,8 +40,8 @@ export function LookSection({ theme, onPatch }: Props) {
             }}
           />
           <span className={styles.sampleSans}>Aa</span>
-          <span className={styles.cardTitle}>Grotesk</span>
-          <span className={styles.cardText}>Clean, modern sans-serif.</span>
+          <span className={styles.cardTitle}>Studio</span>
+          <span className={styles.cardText}>Light, bold and clean, with large sans-serif type.</span>
         </label>
         <label className={`${styles.card} ${preset === "serif-title" ? styles.selected : ""}`}>
           <input
@@ -54,8 +54,8 @@ export function LookSection({ theme, onPatch }: Props) {
             }}
           />
           <span className={styles.sampleSerif}>Aa</span>
-          <span className={styles.cardTitle}>Serif titles</span>
-          <span className={styles.cardText}>Elegant italic serif headings.</span>
+          <span className={styles.cardTitle}>Atelier</span>
+          <span className={styles.cardText}>Dark and warm, with elegant italic serif titles.</span>
         </label>
       </fieldset>
 

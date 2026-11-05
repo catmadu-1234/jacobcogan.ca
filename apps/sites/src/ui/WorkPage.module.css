@@ -1,35 +1,44 @@
+.layout {
+  display: grid;
+  gap: var(--space-7);
+}
 .media {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--space-8);
+  min-width: 0;
 }
 .caption {
   display: grid;
+  align-content: start;
   gap: var(--space-5);
-  margin-top: var(--space-7);
+  min-width: 0;
 }
 .title {
   font-family: var(--font-title);
-  font-size: var(--text-lg);
+  font-size: clamp(2.5rem, 7vw, 6rem);
   font-style: var(--title-style);
   font-weight: var(--title-weight);
-  line-height: 1.2;
-}
-.meta {
-  display: grid;
-  align-content: start;
-  gap: var(--space-5);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 .details {
   display: grid;
   gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hair);
 }
-.detail dt {
+.detail dt,
+.noteLabel {
+  margin: 0;
   color: var(--muted);
   font-family: var(--font-meta);
   font-size: var(--text-xs);
-  letter-spacing: 0.06em;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .detail dd {
@@ -39,32 +48,103 @@
 }
 .detail dd a {
   text-decoration: underline;
+  text-decoration-color: var(--hair);
   text-underline-offset: 3px;
+  transition: text-decoration-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .detail dd a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
+  text-decoration-color: currentcolor;
+}
+.note {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 52ch;
+  line-height: 1.65;
+  white-space: pre-line;
 }
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-2);
+}
+.tags a {
+  padding: 2px var(--space-3);
+  border: 1px solid var(--hair);
+  border-radius: 999px;
   color: var(--muted);
+  font-size: var(--text-xs);
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 .tags a:hover {
-  color: var(--accent);
+  border-color: var(--accent-text);
+  color: var(--accent-text);
 }
 .pager {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-5);
-  margin-top: var(--space-8);
+  margin-top: var(--space-7);
+  color: var(--muted);
 }
 .pager a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
+}
+
+/* The finale: the next work, as big as the page. */
+.finale {
+  position: relative;
+  display: grid;
+  align-content: end;
+  gap: var(--space-2);
+  min-height: 70svh;
+  margin: var(--space-8) calc(var(--page-gutter) * -1) 0;
+  padding: var(--space-6) var(--page-gutter);
+  overflow: hidden;
+  color: #fff;
+  isolation: isolate;
+}
+.finaleImg {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 1200ms var(--ease);
+}
+.finale::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(to top, rgb(0 0 0 / 0.6), rgb(0 0 0 / 0.05) 60%);
+}
+.finaleLabel {
+  font-family: var(--font-meta);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.finaleTitle {
+  font-family: var(--font-title);
+  font-size: clamp(2.5rem, 9vw, 8rem);
+  font-style: var(--title-style);
+  font-weight: var(--title-weight);
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+}
+@media (hover: hover) {
+  .finale:hover .finaleImg {
+    transform: scale(1.04);
+  }
 }
 @media (min-width: 960px) {
-  .caption {
-    grid-template-columns: 1fr 1fr;
+  .layout {
+    grid-template-columns: minmax(16rem, 1fr) 3fr;
     gap: var(--space-8);
+    align-items: start;
+  }
+  .caption {
+    position: sticky;
+    top: var(--space-8);
   }
 }

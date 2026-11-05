@@ -8,12 +8,14 @@ INSERT OR IGNORE INTO sites (id, slug, name, theme_json) VALUES
 
 INSERT OR IGNORE INTO field_defs (site_id, key, label, type, required, sort) VALUES
   (1, 'medium',       'Medium',       'text',     0, 1),
-  (1, 'dimensions',   'Dimensions',   'text',     0, 2),
-  (1, 'year',         'Year',         'text',     0, 3),
-  (1, 'description',  'Description',  'longtext', 0, 4),
-  (1, 'availability', 'Availability', 'text',     0, 5),
+  (1, 'project',      'Project',      'text',     0, 2),
+  (1, 'dimensions',   'Dimensions',   'text',     0, 3),
+  (1, 'year',         'Year',         'text',     0, 4),
+  (1, 'description',  'Description',  'longtext', 0, 5),
+  (1, 'availability', 'Availability', 'text',     0, 6),
   (2, 'medium',       'Medium',       'text',     0, 1),
-  (2, 'dimensions',   'Dimensions',   'text',     0, 2),
-  (2, 'year',         'Year',         'text',     0, 3),
-  (2, 'description',  'Description',  'longtext', 0, 4),
-  (2, 'availability', 'Availability', 'text',     0, 5);
+  (2, 'project',      'Project',      'text',     0, 2),
+  (2, 'dimensions',   'Dimensions',   'text',     0, 3),
+  (2, 'year',         'Year',         'text',     0, 4),
+  (2, 'description',  'Description',  'longtext', 0, 5),
+  (2, 'availability', 'Availability', 'text',     0, 6);

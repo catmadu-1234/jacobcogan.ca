@@ -1,7 +1,20 @@
+/* Atelier: dark, warm, literary. Instrument Serif italic titles over Instrument Sans, by lamplight. */
 html[data-preset="serif-title"] {
+  color-scheme: dark;
+  --wall: #14110f;
+  --paper: #1d1916;
+  --ink: #efe8dd; /* 14.6:1 on --wall */
+  --muted: #a89f92; /* 6.9:1 on --wall */
+  --hair: #2f2a25;
+  --grain: 0.09;
+  --grain-blend: screen;
   --font-body: "Instrument Sans Variable", system-ui, sans-serif;
   --font-title: "Instrument Serif", Georgia, serif;
   --font-meta: "Instrument Sans Variable", system-ui, sans-serif;
   --title-style: italic;
   --title-weight: 400;
+  --text-sm: 0.875rem;
+}
+html[data-preset="serif-title"] body {
+  font-size: var(--text-sm);
 }

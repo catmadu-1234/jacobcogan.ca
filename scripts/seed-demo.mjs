@@ -43,14 +43,14 @@ const { env, dispose } = await getPlatformProxy({
 
 const SITES = [
   {
-    id: 1, index: 0, base: 9001, tags: ["Painting", "Drawing", "Photo", "Print"],
+    id: 1, index: 0, base: 9001, projects: ["Harbour Series", "Studies", "Interiors"], tags: ["Painting", "Drawing", "Photo", "Print"],
     demoName: "Elio Marsh", placeholderName: "Site A",
     about: "Painter and printmaker working between oil, ink and light.\n\nBased by the sea. Taking commissions for the year ahead.",
     links: [{ label: "Instagram", url: "https://instagram.com/example" }, { label: "Shop", url: "https://example.com/shop" }],
     theme: { from: '{"preset":"grotesk"}', to: '{"preset":"grotesk","accent":"#E4452D"}' },
   },
   {
-    id: 2, index: 1, base: 9011, tags: ["Painting", "Drawing", "Photo", "Print"],
+    id: 2, index: 1, base: 9011, projects: ["Weather Maps", "Small Books", "Field Notes"], tags: ["Painting", "Drawing", "Photo", "Print"],
     demoName: "Mira Solano", placeholderName: "Site B",
     about: "Drawing, mostly. Slowly.\n\nMira works in graphite, etching and watercolour, and is making a book of small weather maps.",
     links: [{ label: "Instagram", url: "https://instagram.com/example" }],
@@ -131,6 +131,7 @@ try {
       const short = Math.round((long * Math.min(a.width, a.height)) / Math.max(a.width, a.height));
       const fields = {
         medium: info.medium,
+        project: site.projects[(i * 5 + site.index) % site.projects.length],
         dimensions: a.width >= a.height ? `${long} × ${short} cm` : `${short} × ${long} cm`,
         year: String(2025 - (i % 4)),
         description: DESCRIPTIONS[a.spec.style],
