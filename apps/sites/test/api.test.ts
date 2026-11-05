@@ -33,7 +33,7 @@ describe("public API", () => {
     const { a } = await seedSites();
     await makeWork(a, { title: "Shown" });
     const body = (await (await list("site-a")).json()) as any;
-    expect(Object.keys(body.works[0]).sort()).toEqual(["cover", "details", "media", "slug", "tags", "title", "updatedAt"]);
+    expect(Object.keys(body.works[0]).sort()).toEqual(["cover", "details", "facets", "media", "slug", "title", "updatedAt"]);
     const text = JSON.stringify(body);
     for (const leak of ["siteId", "deletedAt", "visible", "hostname", "contentVersion", "r2", "status"]) {
       expect(text, leak).not.toContain(`"${leak}"`);
@@ -47,12 +47,14 @@ describe("public API", () => {
     expect(body.works[0].media[0].src).toBe(`/media/${a.id}/${w.media[0]!.id}/w480`);
   });
 
-  it("filters by tag", async () => {
+  it("filters by a facet value", async () => {
     const { a } = await seedSites();
-    await makeWork(a, { title: "Painted", tags: ["Painting"] });
-    await makeWork(a, { title: "Drawn", tags: ["Drawing"] });
-    const body = (await (await list("site-a", "?tag=drawing")).json()) as any;
-    expect(body.works.map((w: any) => w.title)).toEqual(["Drawn"]);
+    await makeWork(a, { title: "Painted", facets: { medium: ["Painting"] } });
+    await makeWork(a, { title: "Drawn", facets: { medium: ["Drawing", "Ink"], content: ["Dogs"] } });
+    const byMedium = (await (await list("site-a", "?medium=drawing")).json()) as any;
+    expect(byMedium.works.map((w: any) => w.title)).toEqual(["Drawn"]);
+    const byContent = (await (await list("site-a", "?content=dogs")).json()) as any;
+    expect(byContent.works.map((w: any) => w.title)).toEqual(["Drawn"]);
   });
 
   it("returns one work with previous and next links", async () => {

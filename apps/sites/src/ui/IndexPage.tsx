@@ -26,9 +26,8 @@ interface Props {
 export function IndexPage({ siteName, basePath, works, tagline, links, rowHeight, showCaptions, view, filters }: Props) {
   const sections = buildSections(works, filters);
   const showing = filterWork(works, filters).length;
-  const activeTagName = filters.tag ? works.flatMap((w) => w.tags).find((t) => t.slug === filters.tag)?.name : undefined;
   const active = Object.keys(filters).length > 0;
-  const hasRail = sections.length > 0 || !!filters.tag;
+  const hasRail = sections.length > 0;
 
   return (
     <div className="page">
@@ -39,7 +38,7 @@ export function IndexPage({ siteName, basePath, works, tagline, links, rowHeight
           <p className={styles.empty}>Nothing here yet.</p>
         ) : (
           <div className={styles.body} data-gallery data-view-mode={view} data-has-rail={hasRail ? "" : undefined}>
-            <FilterRail sections={sections} filters={filters} basePath={basePath} view={view} activeTagName={activeTagName} />
+            <FilterRail sections={sections} filters={filters} basePath={basePath} view={view} />
             <section className={styles.results} aria-label="Works">
               <div className={styles.bar}>
                 <a className={styles.showAll} data-clear href={pageHref(basePath, {}, view)} hidden={!active || undefined}>

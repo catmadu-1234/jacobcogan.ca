@@ -1,4 +1,4 @@
-import type { FieldType, Media, MediaVariant, Site } from "./types";
+import { type Facet, type FieldType, type Media, type MediaVariant, type Site } from "./types";
 import { rowToMedia } from "./db/media";
 
 export interface PublicMedia {
@@ -10,7 +10,8 @@ export interface PublicMedia {
 export interface PublicWork {
   slug: string; title: string;
   details: { key: string; label: string; value: string; type: FieldType }[];
-  tags: { name: string; slug: string }[];
+  /** Medium, Project, Content and Exhibition values, each with the name to show and the slug to filter by. */
+  facets: Record<Facet, { name: string; slug: string }[]>;
   media: PublicMedia[]; cover: PublicMedia | null; updatedAt: string;
 }
 
@@ -36,12 +37,12 @@ export function toPublicMedia(m: Media, mediaBase: string): PublicMedia {
 
 interface PubWorkRow { id: number; slug: string; title: string; fields_json: string; cover_media_id: number | null; updated_at: string }
 interface DefRow { key: string; label: string; type: FieldType }
-interface TagJoinRow { work_id: number; name: string; slug: string }
+interface FacetJoinRow { work_id: number; facet: Facet; name: string; slug: string }
 
 const VISIBLE = "w.site_id = ? AND w.kind = 'work' AND w.visible = 1 AND w.deleted_at IS NULL";
 const DEFS_SQL = "SELECT key, label, type FROM field_defs WHERE site_id = ? AND archived = 0 ORDER BY sort, id";
 
-function build(row: PubWorkRow, media: Media[], tags: TagJoinRow[], defs: DefRow[], base: string): PublicWork {
+function build(row: PubWorkRow, media: Media[], values: FacetJoinRow[], defs: DefRow[], base: string): PublicWork {
   const fields: Record<string, string> = JSON.parse(row.fields_json);
   const pub = media.map((m) => toPublicMedia(m, base));
   const coverIndex = media.findIndex((m) => m.id === row.cover_media_id);
@@ -49,11 +50,17 @@ function build(row: PubWorkRow, media: Media[], tags: TagJoinRow[], defs: DefRow
     slug: row.slug,
     title: row.title,
     details: defs.filter((d) => (fields[d.key] ?? "").trim() !== "").map((d) => ({ key: d.key, label: d.label, value: fields[d.key]!, type: d.type })),
-    tags: tags.map((t) => ({ name: t.name, slug: t.slug })),
+    facets: facetsOf(values),
     media: pub,
     cover: pub[coverIndex >= 0 ? coverIndex : 0] ?? null,
     updatedAt: row.updated_at,
   };
+}
+
+function facetsOf(values: FacetJoinRow[]): PublicWork["facets"] {
+  const facets: PublicWork["facets"] = { medium: [], project: [], content: [], exhibition: [] };
+  for (const v of values) facets[v.facet].push({ name: v.name, slug: v.slug });
+  return facets;
 }
 
 function groupBy<T>(rows: T[], key: (r: T) => number): Map<number, T[]> {
@@ -67,21 +74,19 @@ export async function listPublicWorks(
   db: D1Database,
   site: Site,
   mediaBase: string,
-  opts: { tagSlug?: string } = {},
-): Promise<PublicWork[]> {
-  const worksBinds: unknown[] = opts.tagSlug ? [opts.tagSlug, site.id] : [site.id];
-  const tagJoin = opts.tagSlug ? "JOIN work_tags ft ON ft.work_id = w.id JOIN tags t0 ON t0.id = ft.tag_id AND t0.slug = ?" : "";
-  const [works, media, tags, defs] = await db.batch([
-    db.prepare(`SELECT w.* FROM works w ${tagJoin} WHERE ${VISIBLE} ORDER BY w.sort ASC, w.id DESC`).bind(...worksBinds),
+)
+: Promise<PublicWork[]> {
+  const [works, media, values, defs] = await db.batch([
+    db.prepare(`SELECT w.* FROM works w WHERE ${VISIBLE} ORDER BY w.sort ASC, w.id DESC`).bind(site.id),
     db.prepare(`SELECT m.* FROM media m JOIN works w ON w.id = m.work_id WHERE ${VISIBLE} AND m.status = 'ready' ORDER BY m.work_id, m.sort, m.id`).bind(site.id),
-    db.prepare(`SELECT wt.work_id, t.name, t.slug FROM work_tags wt JOIN tags t ON t.id = wt.tag_id JOIN works w ON w.id = wt.work_id WHERE ${VISIBLE} ORDER BY t.name COLLATE NOCASE`).bind(site.id),
+    db.prepare(`SELECT l.work_id, fv.facet, fv.name, fv.slug FROM work_facet_values l JOIN facet_values fv ON fv.id = l.value_id JOIN works w ON w.id = l.work_id WHERE ${VISIBLE} ORDER BY fv.name COLLATE NOCASE`).bind(site.id),
     db.prepare(DEFS_SQL).bind(site.id),
   ]);
   const mediaByWork = groupBy((media!.results as any[]).map(rowToMedia), (m) => m.workId!);
-  const tagsByWork = groupBy(tags!.results as unknown as TagJoinRow[], (t) => t.work_id);
+  const valuesByWork = groupBy(values!.results as unknown as FacetJoinRow[], (t) => t.work_id);
   return (works!.results as unknown as PubWorkRow[])
     .filter((w) => (mediaByWork.get(w.id)?.length ?? 0) > 0)
-    .map((w) => build(w, mediaByWork.get(w.id)!, tagsByWork.get(w.id) ?? [], defs!.results as unknown as DefRow[], mediaBase));
+    .map((w) => build(w, mediaByWork.get(w.id)!, valuesByWork.get(w.id) ?? [], defs!.results as unknown as DefRow[], mediaBase));
 }
 
 export async function getPublicWork(
@@ -91,14 +96,14 @@ export async function getPublicWork(
   mediaBase: string,
 ): Promise<{ work: PublicWork; prev: { slug: string; title: string } | null; next: { slug: string; title: string } | null } | null> {
   const bySlug = `${VISIBLE} AND w.slug = ?`;
-  const [work, nav, media, tags, defs] = await db.batch([
+  const [work, nav, media, values, defs] = await db.batch([
     db.prepare(`SELECT w.* FROM works w WHERE ${bySlug}`).bind(site.id, slug),
     db.prepare(
       `SELECT w.slug, w.title FROM works w WHERE ${VISIBLE}
        AND EXISTS (SELECT 1 FROM media m WHERE m.work_id = w.id AND m.status = 'ready') ORDER BY w.sort ASC, w.id DESC`,
     ).bind(site.id),
     db.prepare(`SELECT m.* FROM media m JOIN works w ON w.id = m.work_id WHERE ${bySlug} AND m.status = 'ready' ORDER BY m.sort, m.id`).bind(site.id, slug),
-    db.prepare(`SELECT wt.work_id, t.name, t.slug FROM work_tags wt JOIN tags t ON t.id = wt.tag_id JOIN works w ON w.id = wt.work_id WHERE ${bySlug} ORDER BY t.name COLLATE NOCASE`).bind(site.id, slug),
+    db.prepare(`SELECT l.work_id, fv.facet, fv.name, fv.slug FROM work_facet_values l JOIN facet_values fv ON fv.id = l.value_id JOIN works w ON w.id = l.work_id WHERE ${bySlug} ORDER BY fv.name COLLATE NOCASE`).bind(site.id, slug),
     db.prepare(DEFS_SQL).bind(site.id),
   ]);
   const row = (work!.results as unknown as PubWorkRow[])[0];
@@ -107,7 +112,7 @@ export async function getPublicWork(
   const list = nav!.results as unknown as { slug: string; title: string }[];
   const i = list.findIndex((w) => w.slug === slug);
   return {
-    work: build(row, readyMedia, tags!.results as unknown as TagJoinRow[], defs!.results as unknown as DefRow[], mediaBase),
+    work: build(row, readyMedia, values!.results as unknown as FacetJoinRow[], defs!.results as unknown as DefRow[], mediaBase),
     prev: i > 0 ? list[i - 1]! : null,
     next: i >= 0 && i < list.length - 1 ? list[i + 1]! : null,
   };

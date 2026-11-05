@@ -1,5 +1,20 @@
 # Journal — senka
 
+## 2026-11-05 18:26 EST (branch: feat/senka-cms)
+- Updated test fixtures and filter tests across sites package for new facet data shape
+- Fixed UI test suite to build works from facets instead of old details model
+- Implemented data migration tasks (backfill script, demo seed updates, schema changes)
+- Deployed admin worker and core database migration; sites app deployment in progress
+
+Next: Verify sites deployment completion and run final production checks for cataloguing facets feature.
+
+
+## 2026-11-05 17:51 EST (branch: feat/senka-cms)
+If you'd rather skip the questions and have me just start, say so and I'll go with sensible defaults.
+
+Picture someone using these six facets on the finished site — either you browsing the portfolio filtered by medium and year, or you in ArtMS adding a new work and tagging it across these categories. What's that moment like? Are they trying to understand your practice better, find work with specific properties, or is the cataloguing itself the thing that matters?
+
+
 ## 2026-11-05 17:00 EST (branch: feat/senka-cms, dirty)
 The transcript provided only contains an opening question about Onlook deployment display with no subsequent work or resolution shown. Cannot summarize a work session from an incomplete transcript—please provide the full conversation including any work completed.
 

@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function Works({ onAdd }: Props) {
-  const { query, setQuery, tag, setTag, works, setWorks, tags, state, reload } = useWorks();
+  const { query, setQuery, works, setWorks, state, reload } = useWorks();
   const [order, setOrder] = useState<WorkSummary[] | null>(null);
   const [saving, setSaving] = useState(false);
   // Reordering is edited locally and only saved when "Done" is pressed.
@@ -25,7 +25,7 @@ export function Works({ onAdd }: Props) {
 
   const reordering = order !== null;
   const shown = reorder.shown;
-  const filtered = query.trim() !== "" || tag !== "";
+  const filtered = query.trim() !== "";
 
   async function finishReorder() {
     if (!order) return;
@@ -72,14 +72,6 @@ export function Works({ onAdd }: Props) {
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
-          <select aria-label="Filter by tag" value={tag} onChange={(e) => setTag(e.target.value)}>
-            <option value="">All tags</option>
-            {tags.map((t) => (
-              <option key={t.id} value={t.slug}>
-                {t.name}
-              </option>
-            ))}
-          </select>
           <span className={styles.count}>
             {state === "ready" ? `${works.length} ${works.length === 1 ? "work" : "works"}` : ""}
           </span>

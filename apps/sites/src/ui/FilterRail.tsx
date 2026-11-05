@@ -6,16 +6,12 @@ interface Props {
   filters: Filters;
   basePath: string;
   view: View;
-  /** The name to show for an active tag filter; falls back to its slug. */
-  activeTagName?: string;
 }
 
-/** Medium, Project and Year down the left margin. Every choice is a plain link, so it works without script. */
-export function FilterRail({ sections, filters, basePath, view, activeTagName }: Props) {
-  const tag = filters.tag;
-  if (sections.length === 0 && !tag) return null;
+/** Medium, Project, Content, Exhibition and Year down the left margin. Every choice is a plain link, so it works without script. */
+export function FilterRail({ sections, filters, basePath, view }: Props) {
+  if (sections.length === 0) return null;
   const active = Object.keys(filters).length > 0;
-  const { tag: _tag, ...withoutTag } = filters;
   return (
     <aside className={styles.rail} data-filter-rail data-base={basePath} aria-label="Filter works">
       <div className={styles.head}>
@@ -24,13 +20,6 @@ export function FilterRail({ sections, filters, basePath, view, activeTagName }:
           Clear all
         </a>
       </div>
-      {tag ? (
-        <p className={styles.chip} data-tag-chip>
-          <a href={pageHref(basePath, withoutTag, view)} aria-label={`Remove tag ${activeTagName ?? tag}`}>
-            {activeTagName ?? tag} <span aria-hidden="true">×</span>
-          </a>
-        </p>
-      ) : null}
       {sections.map((section) => (
         <section key={section.key} className={styles.section}>
           <h3 className={styles.title}>{section.title}</h3>

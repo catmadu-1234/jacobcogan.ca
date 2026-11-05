@@ -1,5 +1,5 @@
 import { env } from "cloudflare:test";
-import { createWork, createMedia, getSiteBySlug, markMediaReady, setWorkTags, softDeleteWork, updateWork, type Media, type Site } from "@senka/core";
+import { createWork, createMedia, getSiteBySlug, markMediaReady, setWorkFacets, softDeleteWork, updateWork, type Facet, type Media, type Site } from "@senka/core";
 
 export async function seedSites(): Promise<{ a: Site; b: Site }> {
   const insert = env.DB.prepare("INSERT INTO sites (slug, name, hostname) VALUES (?, ?, ?)");
@@ -16,7 +16,7 @@ export interface MadeWork {
 /** A work with ready media whose files exist in R2 (original = "<id>:original" text). */
 export async function makeWork(
   site: Site,
-  opts: { title: string; visible?: boolean; deleted?: boolean; pending?: boolean; tags?: string[]; variants?: ("original" | "w480" | "w1200" | "poster")[]; kind?: "image" | "video" },
+  opts: { title: string; visible?: boolean; deleted?: boolean; pending?: boolean; facets?: Partial<Record<Facet, string[]>>; variants?: ("original" | "w480" | "w1200" | "poster")[]; kind?: "image" | "video" },
 ): Promise<MadeWork> {
   const created = await createWork(env.DB, site.id);
   const saved = (await updateWork(env.DB, site.id, created.id, {
@@ -33,7 +33,7 @@ export async function makeWork(
     });
   }
   const ready = opts.pending ? media : (await markMediaReady(env.DB, site.id, media.id, 10))!;
-  if (opts.tags?.length) await setWorkTags(env.DB, site.id, created.id, opts.tags);
+  if (opts.facets) await setWorkFacets(env.DB, site.id, created.id, opts.facets);
   if (opts.deleted) await softDeleteWork(env.DB, site.id, created.id);
   return { workId: created.id, slug: saved.slug, media: [ready] };
 }

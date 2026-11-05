@@ -1,0 +1,40 @@
+.tip {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+}
+.button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+/* The visible icon is small; this widens the tappable area to the 44px used everywhere else. */
+.button::after {
+  content: "";
+  position: absolute;
+  inset: -10px;
+}
+.button:hover,
+.button[aria-expanded="true"] {
+  color: var(--ink);
+}
+.text {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3);
+  max-width: 52ch;
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  line-height: 1.5;
+}

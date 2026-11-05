@@ -35,7 +35,7 @@ export function IndexList({ works, basePath, filters = {} }: Props) {
                 {workNumber(i)}
               </span>
               <span className={styles.title}>{w.title.trim() || "Untitled"}</span>
-              <span className={styles.tags}>{w.tags.map((t) => t.name).join(", ")}</span>
+              <span className={styles.tags}>{w.facets.medium.map((t) => t.name).join(", ")}</span>
               <span className={styles.year}>{year}</span>
               {src ? (
                 <img

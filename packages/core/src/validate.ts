@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ALLOWED_MIME, MAX_UPLOAD_BYTES } from "./types";
+import { ALLOWED_MIME, FACETS, MAX_UPLOAD_BYTES } from "./types";
 import { slugify } from "./slug";
 
 const httpUrl = z
@@ -40,15 +40,24 @@ export const SitePatch = z.object({
 });
 export type SitePatch = z.infer<typeof SitePatch>;
 
+const facetValues = z.array(z.string().trim().min(1).max(40)).max(20);
+/** Year is optional, but when given it is exactly four digits, so every year is written the same way. */
+export const YEAR_PATTERN = /^\d{4}$/;
+
 export const WorkPatch = z.object({
   title: z.string().max(200).optional(),
   slug: z.string().max(200).transform(slugify).refine((s) => s.length >= 1 && s.length <= 80).optional(),
   visible: z.boolean().optional(),
   fields: z.record(z.string(), z.string().max(10000)).optional(),
   body: z.string().max(5000).optional(),
-  tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  facets: z.object(Object.fromEntries(FACETS.map((f) => [f, facetValues])) as Record<(typeof FACETS)[number], typeof facetValues>).partial().optional(),
   coverMediaId: z.number().int().nullable().optional(),
   expectedUpdatedAt: z.string().min(1),
+}).superRefine((patch, ctx) => {
+  const year = patch.fields?.year?.trim();
+  if (year && !YEAR_PATTERN.test(year)) {
+    ctx.addIssue({ code: "custom", path: ["fields", "year"], message: "Write the year with four digits, like 2024" });
+  }
 });
 export type WorkPatch = z.infer<typeof WorkPatch>;
 

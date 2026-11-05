@@ -1,7 +1,7 @@
 // Filters the gallery in place. Everything works without this script (every choice is a link to a page rendered
 // with that filter); with it, choosing a value rearranges the tiles on the same page, inside a view transition,
 // so nothing reloads or flashes. It reads the same rules as the server through ../lib/filters.
-import { matches, pageHref, parseFilters, toggleFilter, type FacetKey, type Filters, type View, type WorkFacets } from "../lib/filters";
+import { has, matches, pageHref, parseFilters, toggleFilter, type FacetKey, type Filters, type View, type WorkFacets } from "../lib/filters";
 
 const gallery = document.querySelector<HTMLElement>("[data-gallery]");
 const rail = document.querySelector<HTMLElement>("[data-filter-rail]");
@@ -10,15 +10,16 @@ if (gallery && rail) {
   const base = rail.dataset.base ?? "";
   const view: View = gallery.dataset.viewMode === "index" ? "index" : "grid";
   const items = [...gallery.querySelectorAll<HTMLElement>("[data-work]")];
+  const list = (value: string | undefined) => (value ? value.split(" ") : []);
   const facets = items.map((el): WorkFacets => ({
-    medium: el.dataset.medium,
-    project: el.dataset.project,
+    medium: list(el.dataset.medium),
+    project: list(el.dataset.project),
+    content: list(el.dataset.content),
+    exhibition: list(el.dataset.exhibition),
     year: el.dataset.year,
-    tags: el.dataset.tags ? el.dataset.tags.split(" ") : [],
   }));
   const options = [...rail.querySelectorAll<HTMLAnchorElement>("a[data-facet]")];
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const tag = document.querySelector<HTMLElement>("[data-filter-rail] [data-tag-chip]");
 
   // Tiles are tagged once, so the transition can move each one and fade the ones that come and go.
   for (const el of items) el.style.setProperty("view-transition-class", "tile");
@@ -26,7 +27,7 @@ if (gallery && rail) {
   const count = (key: FacetKey, value: string, filters: Filters) => {
     const others = { ...filters };
     delete others[key];
-    return facets.filter((f) => f[key] === value && matches(f, others)).length;
+    return facets.filter((f) => has(f, key, value) && matches(f, others)).length;
   };
 
   function apply(filters: Filters) {
@@ -55,7 +56,6 @@ if (gallery && rail) {
       clear.href = pageHref(base, {}, view);
       if (clear.closest("[data-empty-state]") === null) clear.hidden = !any;
     }
-    if (tag) tag.hidden = !filters.tag;
     for (const toggle of document.querySelectorAll<HTMLAnchorElement>("a[data-view]")) {
       toggle.href = pageHref(base, filters, toggle.dataset.view === "index" ? "index" : "grid");
     }
@@ -97,16 +97,12 @@ if (gallery && rail) {
 
   document.addEventListener("click", (event) => {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const link = (event.target as Element).closest<HTMLAnchorElement>("a[data-facet], a[data-clear], [data-tag-chip] a");
+    const link = (event.target as Element).closest<HTMLAnchorElement>("a[data-facet], a[data-clear]");
     if (!link || !gallery.contains(link) && !rail.contains(link)) return;
     event.preventDefault();
     const current = parseFilters(location.search);
     if (link.dataset.facet) go(toggleFilter(current, link.dataset.facet as FacetKey, link.dataset.value!), true);
-    else if (link.hasAttribute("data-clear")) go({}, true);
-    else {
-      const { tag: _tag, ...rest } = current;
-      go(rest, true);
-    }
+    else go({}, true);
   });
 
   window.addEventListener("popstate", () => go(parseFilters(location.search), false));

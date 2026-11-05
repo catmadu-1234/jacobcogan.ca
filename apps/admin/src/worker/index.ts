@@ -10,7 +10,7 @@ import { fieldRoutes } from "./routes/fields";
 import { mediaRoutes } from "./routes/media";
 import { siteRoutes } from "./routes/site";
 import { studioRoutes } from "./routes/studio";
-import { tagRoutes } from "./routes/tags";
+import { facetRoutes } from "./routes/facets";
 import { workRoutes } from "./routes/works";
 
 import type { Env } from "./env";
@@ -35,7 +35,7 @@ export function createApp(opts: { getKey?: JWTVerifyGetKey } = {}) {
   api.route("/fields", fieldRoutes);
   api.route("/works", workRoutes);
   api.route("/studio", studioRoutes);
-  api.route("/tags", tagRoutes);
+  api.route("/facets", facetRoutes);
   api.route("/", mediaRoutes);
 
   const app = new Hono<AppEnv>();

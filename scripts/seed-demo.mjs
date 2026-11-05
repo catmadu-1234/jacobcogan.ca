@@ -15,6 +15,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import sharp from "sharp";
+import { tagSlug } from "../packages/core/src/slug.ts";
 import { STYLE_INFO, artSpec, renderArtPng, dimensionsFor } from "./lib/demo-art.mjs";
 
 if (process.argv.includes("--remote")) {
@@ -102,6 +103,7 @@ const DESCRIPTIONS = {
   riso: "Two inks, printed one over the other and a little out of register on purpose.",
   contour: "A map of somewhere that does not exist, drawn from memory of several places that do.",
 };
+const CONTENT = ["Landscapes", "People", "Still life", "Architecture"];
 const AVAILABILITY = ["Available", "Sold", "Available", "Private collection"];
 
 const hex = ({ r, g, b }) => `#${[r, g, b].map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`;
@@ -136,6 +138,7 @@ async function artwork(siteIndex, workIndex) {
 try {
   const db = env.DB;
   const statements = [
+    db.prepare("DELETE FROM work_facet_values WHERE work_id BETWEEN 9001 AND 9199"),
     db.prepare("DELETE FROM work_tags WHERE work_id BETWEEN 9001 AND 9199"),
     db.prepare("DELETE FROM media WHERE id BETWEEN 9001 AND 9199"),
     db.prepare("DELETE FROM works WHERE id BETWEEN 9001 AND 9199"),
@@ -156,9 +159,6 @@ try {
       db.prepare("UPDATE sites SET links_json = ? WHERE id = ? AND links_json = '[]'").bind(JSON.stringify(site.links), site.id),
       db.prepare("UPDATE sites SET theme_json = ? WHERE id = ? AND theme_json = ?").bind(site.theme.to, site.id, site.theme.from),
     );
-    for (const tag of site.tags) {
-      statements.push(db.prepare("INSERT OR IGNORE INTO tags (site_id, name, slug) VALUES (?, ?, ?)").bind(site.id, tag, tag.toLowerCase()));
-    }
     for (let i = 0; i < 9; i++) {
       const hidden = i === 8;
       const id = site.base + i;
@@ -168,8 +168,6 @@ try {
       const long = 40 + ((i * 17 + site.index * 9) % 80);
       const short = Math.round((long * Math.min(a.width, a.height)) / Math.max(a.width, a.height));
       const fields = {
-        medium: info.medium,
-        project: site.projects[(i * 5 + site.index) % site.projects.length],
         dimensions: a.width >= a.height ? `${long} × ${short} cm` : `${short} × ${long} cm`,
         year: String(2025 - (i % 4)),
         description: DESCRIPTIONS[a.spec.style],
@@ -189,8 +187,23 @@ try {
              VALUES (?, ?, ?, 'image', 'ready', 'image/jpeg', ?, ?, ?, ?, ?, ?, 1)`,
           )
           .bind(id, site.id, id, a.width, a.height, a.color, `${title} (sample artwork)`, JSON.stringify(a.variants), bytes),
-        db.prepare("INSERT OR IGNORE INTO work_tags (work_id, tag_id) SELECT ?, id FROM tags WHERE site_id = ? AND slug = ?").bind(id, site.id, info.tag.toLowerCase()),
       );
+      const facets = {
+        medium: [info.medium],
+        project: [site.projects[(i * 5 + site.index) % site.projects.length]],
+        content: [CONTENT[(i + site.index) % CONTENT.length]],
+        exhibition: [[], ["Spring Show 2025"], ["Spring Show 2025", "Open Studio"]][i % 3],
+      };
+      for (const [facet, names] of Object.entries(facets)) {
+        for (const name of names) {
+          statements.push(
+            db.prepare("INSERT OR IGNORE INTO facet_values (site_id, facet, name, slug) VALUES (?, ?, ?, ?)").bind(site.id, facet, name, tagSlug(name)),
+            db
+              .prepare("INSERT OR IGNORE INTO work_facet_values (work_id, value_id) SELECT ?, id FROM facet_values WHERE site_id = ? AND facet = ? AND slug = ?")
+              .bind(id, site.id, facet, tagSlug(name)),
+          );
+        }
+      }
       for (const variant of a.variants) {
         uploads.push(
           env.MEDIA.put(`${site.id}/${id}/${variant}`, new Uint8Array(a.files[variant]), {

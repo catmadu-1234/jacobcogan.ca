@@ -30,13 +30,15 @@ const media = (id: number, alt: string) => ({
   id, siteId: 1, workId: 5, kind: "image", status: "ready", mime: "image/jpeg", width: 1, height: 1, duration: null,
   color: null, alt, variants: ["original", "w480"], bytes: 1, sort: id, createdAt: "",
 });
-const mediumDef = { id: 1, siteId: 1, key: "medium", label: "Medium", type: "text", required: true, sort: 1, archived: false };
+const emptyFacets = { medium: [], project: [], content: [], exhibition: [] };
+const requiredDef = { id: 1, siteId: 1, key: "availability", label: "Availability", type: "text", required: true, sort: 1, archived: false };
+const yearDef = { id: 2, siteId: 1, key: "year", label: "Year", type: "text", required: false, sort: 2, archived: false };
 
 type Call = { method: string; path: string; body: any };
 const json = (status: number, body: unknown) =>
   new Response(body === undefined ? null : JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
-function stubApi(respond: (c: Call) => Response | undefined, load: { work?: object; media?: object[]; tags?: object[] } = {}) {
+function stubApi(respond: (c: Call) => Response | undefined, load: { work?: object; media?: object[]; facets?: object } = {}) {
   const calls: Call[] = [];
   vi.stubGlobal(
     "fetch",
@@ -45,9 +47,9 @@ function stubApi(respond: (c: Call) => Response | undefined, load: { work?: obje
       calls.push(call);
       const custom = respond(call);
       if (custom) return custom;
-      if (call.method === "GET" && path === "/api/works/5") return json(200, { work: load.work ?? work(), media: load.media ?? [], tags: load.tags ?? [] });
-      if (call.method === "GET" && path === "/api/fields") return json(200, [mediumDef]);
-      if (call.method === "GET" && path === "/api/tags") return json(200, [{ id: 1, name: "Oil" }, { id: 2, name: "Paper" }]);
+      if (call.method === "GET" && path === "/api/works/5") return json(200, { work: load.work ?? work(), media: load.media ?? [], facets: load.facets ?? emptyFacets });
+      if (call.method === "GET" && path === "/api/fields") return json(200, [requiredDef, yearDef]);
+      if (call.method === "GET" && path === "/api/facets") return json(200, { ...emptyFacets, medium: [{ id: 1, name: "Oil" }, { id: 2, name: "Paper" }] });
       return json(404, { error: "not-found" });
     }),
   );
@@ -65,17 +67,23 @@ beforeEach(() => resetToasts());
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Editor", () => {
-  it("shows the title, details, tags and visibility of the work", async () => {
-    stubApi(() => undefined, { work: work({ title: "Blue Hour", fields: { medium: "Oil" } }), tags: [{ id: 1, name: "Oil" }] });
+  it("shows the title, catalogue, details and visibility of the work", async () => {
+    stubApi(() => undefined, {
+      work: work({ title: "Blue Hour", fields: { availability: "Sold", year: "2024" } }),
+      facets: { ...emptyFacets, medium: [{ id: 1, name: "Oil" }, { id: 3, name: "Paper" }], content: [{ id: 4, name: "Dogs" }] },
+    });
     render(ui());
     expect(((await screen.findByLabelText("Title")) as HTMLInputElement).value).toBe("Blue Hour");
-    expect((screen.getByLabelText(/Medium/) as HTMLInputElement).value).toBe("Oil");
-    expect(screen.getByText("Oil", { selector: "span" })).toBeTruthy();
+    expect((screen.getByLabelText(/Availability/) as HTMLInputElement).value).toBe("Sold");
+    expect((screen.getByLabelText("Year") as HTMLInputElement).value).toBe("2024");
+    expect(screen.getByRole("button", { name: "Remove medium Oil" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Remove medium Paper" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Remove content Dogs" })).toBeTruthy();
     expect(screen.getByRole("switch", { name: /visible on site/i }).getAttribute("aria-checked")).toBe("false");
   });
 
   it("autosaves edits after a pause, sending the version it loaded", async () => {
-    const calls = stubApi((c) => (c.method === "PATCH" ? json(200, { work: work({ title: "New", updatedAt: "t2" }), tags: [] }) : undefined));
+    const calls = stubApi((c) => (c.method === "PATCH" ? json(200, { work: work({ title: "New", updatedAt: "t2" }), facets: emptyFacets }) : undefined));
     render(ui());
     fireEvent.change(await screen.findByLabelText("Title"), { target: { value: "New" } });
     await waitFor(() => expect(calls.some((c) => c.method === "PATCH")).toBe(true), { timeout: 3000 });
@@ -88,17 +96,49 @@ describe("Editor", () => {
     const calls = stubApi((c) => {
       if (c.method !== "PATCH") return undefined;
       return ++patches === 1
-        ? json(400, { error: "missing-required", missing: ["Medium"] })
-        : json(200, { work: work({ updatedAt: "t2" }), tags: [] });
+        ? json(400, { error: "missing-required", missing: ["Availability"] })
+        : json(200, { work: work({ updatedAt: "t2" }), facets: emptyFacets });
     });
     render(ui());
     const toggle = await screen.findByRole("switch", { name: /visible on site/i });
     fireEvent.click(toggle);
-    expect(await screen.findByText(/Hidden for now\. Fill in Medium to show this work on your site\./, undefined, { timeout: 3000 })).toBeTruthy();
+    expect(await screen.findByText(/Hidden for now\. Fill in Availability to show this work on your site\./, undefined, { timeout: 3000 })).toBeTruthy();
     expect(toggle.getAttribute("aria-checked")).toBe("false");
     const sent = calls.filter((c) => c.method === "PATCH");
     expect(sent[1]!.body).toMatchObject({ visible: false, expectedUpdatedAt: "t1" });
     expect(screen.getByText("Needed to show this work on your site.")).toBeTruthy();
+  });
+
+  it("explains each catalogue field behind an i button", async () => {
+    stubApi(() => undefined);
+    render(ui());
+    fireEvent.click(await screen.findByRole("button", { name: "About Exhibition" }));
+    expect(screen.getByRole("note").textContent).toMatch(/shows it has hung in/i);
+    fireEvent.click(screen.getByRole("button", { name: "About Year" }));
+    expect(screen.getAllByRole("note").some((n) => /four digits/i.test(n.textContent ?? ""))).toBe(true);
+  });
+
+  it("saves several values for a facet together with the other facets", async () => {
+    const calls = stubApi((c) => (c.method === "PATCH" ? json(200, { work: work({ updatedAt: "t2" }), facets: emptyFacets }) : undefined), {
+      facets: { ...emptyFacets, project: [{ id: 9, name: "Harbour" }] },
+    });
+    render(ui());
+    const box = await screen.findByLabelText("Add a medium");
+    fireEvent.change(box, { target: { value: "Oil" } });
+    fireEvent.keyDown(box, { key: "Enter" });
+    fireEvent.change(box, { target: { value: "Paper" } });
+    fireEvent.keyDown(box, { key: "Enter" });
+    await waitFor(() => expect(calls.some((c) => c.method === "PATCH")).toBe(true), { timeout: 3000 });
+    expect(calls.find((c) => c.method === "PATCH")!.body.facets).toEqual({ medium: ["Oil", "Paper"], project: ["Harbour"], content: [], exhibition: [] });
+  });
+
+  it("will not send a year that is not four digits, and says so", async () => {
+    const calls = stubApi(() => undefined);
+    render(ui());
+    fireEvent.change(await screen.findByLabelText("Year"), { target: { value: "24" } });
+    expect(await screen.findByText(/Use four digits, like 2024/)).toBeTruthy();
+    await new Promise((r) => setTimeout(r, 1200));
+    expect(calls.some((c) => c.method === "PATCH")).toBe(false);
   });
 
   it("warns when the work was changed somewhere else", async () => {

@@ -9,8 +9,8 @@ export async function seedTwoSites(db: D1Database): Promise<{ a: number; b: numb
 }
 
 import {
-  createWork, updateWork, createMedia, updateMedia, setWorkTags,
-  type Media, type MediaVariant, type Work,
+  createWork, updateWork, createMedia, updateMedia, setWorkFacets,
+  type Facet, type Media, type MediaVariant, type Work,
 } from "../src";
 
 export interface AddWorkOptions {
@@ -19,7 +19,7 @@ export interface AddWorkOptions {
   body?: string;
   visible?: boolean;
   fields?: Record<string, string>;
-  tags?: string[];
+  facets?: Partial<Record<Facet, string[]>>;
   media?: Array<{ kind?: "image" | "video"; variants?: MediaVariant[]; ready?: boolean; width?: number; height?: number }>;
 }
 
@@ -53,6 +53,6 @@ export async function addWork(
     if (m.ready !== false) row = (await updateMedia(db, siteId, row.id, { status: "ready" }))!;
     media.push(row);
   }
-  if (opts.tags?.length) await setWorkTags(db, siteId, saved.id, opts.tags);
+  if (opts.facets) await setWorkFacets(db, siteId, saved.id, opts.facets);
   return { work: saved, media };
 }

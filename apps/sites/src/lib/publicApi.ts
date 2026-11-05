@@ -1,4 +1,5 @@
 import { getPublicWork, getSiteBySlug, listPublicWorks } from "@senka/core";
+import { filterWork, parseFilters } from "./filters";
 
 export interface ApiEnv {
   DB: D1Database;
@@ -19,11 +20,11 @@ function json(body: unknown, status = 200): Response {
 }
 const notFound = () => json({ error: "not-found" }, 404);
 
-/** GET /api/public/:site/works[?tag=slug] — everything visible on the site, in display order. */
+/** GET /api/public/:site/works[?medium=&project=&content=&exhibition=&year=] — everything visible on the site, in display order. */
 export async function handlePublicWorks(env: ApiEnv, siteSlug: string, url: URL): Promise<Response> {
   const site = await getSiteBySlug(env.DB, siteSlug);
   if (!site) return notFound();
-  const works = await listPublicWorks(env.DB, site, mediaBase(env), { tagSlug: url.searchParams.get("tag") || undefined });
+  const works = filterWork(await listPublicWorks(env.DB, site, mediaBase(env)), parseFilters(url.searchParams));
   return json({ site: { name: site.name, slug: site.slug }, works });
 }
 
