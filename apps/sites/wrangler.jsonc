@@ -8,5 +8,10 @@
     { "binding": "DB", "database_name": "senka-db", "database_id": "d04a5e24-e001-4af3-9b12-25588eeabdb3", "migrations_dir": "../../migrations" }
   ],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "senka-media" }],
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "jacobcogan.ca", "custom_domain": true },
+    { "pattern": "www.jacobcogan.ca", "custom_domain": true }
+  ],
   "vars": { "MEDIA_BASE": "/media" }
 }

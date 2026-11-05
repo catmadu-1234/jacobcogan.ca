@@ -34,6 +34,21 @@ function harness() {
   return { run, calls, locals, puts, settle: () => Promise.all(pending) };
 }
 
+describe("routePage on www", () => {
+  it("redirects www. of a site's domain to the bare domain, keeping path and query", async () => {
+    await seedSites();
+    const res = await harness().run("https://www.art.example.com/work/blue-hour?x=1");
+    expect(res.status).toBe(301);
+    expect(res.headers.get("location")).toBe("https://art.example.com/work/blue-hour?x=1");
+  });
+
+  it("leaves www. alone when no site owns the bare domain", async () => {
+    await seedSites();
+    const res = await harness().run("https://www.nobody.example.com/");
+    expect(res.status).toBe(200);
+  });
+});
+
 describe("routePage on a site's own hostname", () => {
   it("rewrites once to the site's internal route and then renders it, without looping", async () => {
     await seedSites();

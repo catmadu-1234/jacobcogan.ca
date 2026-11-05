@@ -1,4 +1,4 @@
-import type { Site } from "@senka/core";
+import { getSiteByHostname, type Site } from "@senka/core";
 import { withVersionCache } from "./cache";
 import { isSharedPath, resolveSiteFromRequest, rewritePath } from "./site";
 
@@ -33,6 +33,15 @@ export async function routePage(a: RoutingArgs): Promise<Response> {
   // Astro swaps its request for the internal route after a rewrite; keep the address the visitor used.
   locals.publicUrl ??= request.url;
   const url = new URL(request.url);
+
+  // `www.` of a site's own domain sends visitors to the bare domain, so the portfolio has one address.
+  if (url.hostname.startsWith("www.")) {
+    const bare = url.hostname.slice(4);
+    if (await getSiteByHostname(a.env.DB, bare)) {
+      url.hostname = bare;
+      return Response.redirect(url.toString(), 301);
+    }
+  }
   if (isSharedPath(url.pathname)) return a.next();
 
   const resolved = await resolveSiteFromRequest(a.env.DB, url);
