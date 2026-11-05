@@ -167,3 +167,11 @@ The defaults are: site-a uses `grotesk`, and site-b uses `serif-title` with acce
 - **Filtering in place:** with JavaScript, a choice rearranges the tiles on the same page inside a View Transition (tiles glide, leavers dissolve, arrivals rise in a beat later; no whole-page cross-fade, which was the flash). Reduced motion applies the change at once.
 - **Work page:** sticky title and details beside the pictures, medium/project/year link back into the filtered gallery, and a full-bleed "Next work" finale (or "Back to the start" on the last).
 - **Atmosphere:** film grain, scroll-driven reveals, and a difference-blend header; all gated on `prefers-reduced-motion`.
+
+## Studio (feed)
+
+A third page on each site, `/studio`: a quick feed of photos, clips and "thoughts" (a few words with no picture), meant to be filled in from a phone.
+
+- **Data:** a Studio post is a `works` row with `kind = 'post'` and its words in `body` (migration 0002). Uploads, undo, show/hide and clean-up are the same as for works. Posts never appear in the portfolio grid, work pages, navigation or sitemap entries for works.
+- **Admin:** a Studio tab with a quick-post box (words, any number of photos or clips, one Post button). Posts stay hidden until their files are in, then show on the site. Each post can be edited in place, hidden ("Hidden" / "Visible on site"), or deleted with Undo.
+- **Site:** newest first, in 1 / 2 / 3 columns. Photos open full size, short clips loop silently, thoughts are set as typography on three colourways (plain, accent tint, inverted). Dates are shown in UTC so everyone sees the same day.

@@ -55,7 +55,7 @@ workRoutes.patch("/:id", async (c) => {
 
   // A work that shows on the site must have every required detail filled in.
   const visibleAfter = patch.visible ?? current.visible;
-  if (visibleAfter && (patch.visible !== undefined || patch.fields !== undefined)) {
+  if (current.kind === "work" && visibleAfter && (patch.visible !== undefined || patch.fields !== undefined)) {
     const fields = { ...current.fields, ...(patch.fields ?? {}) };
     const missing = (await listFieldDefs(db, siteId))
       .filter((d) => d.required && !(fields[d.key] ?? "").trim())

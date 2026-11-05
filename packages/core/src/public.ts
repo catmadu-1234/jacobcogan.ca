@@ -38,7 +38,7 @@ interface PubWorkRow { id: number; slug: string; title: string; fields_json: str
 interface DefRow { key: string; label: string; type: FieldType }
 interface TagJoinRow { work_id: number; name: string; slug: string }
 
-const VISIBLE = "w.site_id = ? AND w.visible = 1 AND w.deleted_at IS NULL";
+const VISIBLE = "w.site_id = ? AND w.kind = 'work' AND w.visible = 1 AND w.deleted_at IS NULL";
 const DEFS_SQL = "SELECT key, label, type FROM field_defs WHERE site_id = ? AND archived = 0 ORDER BY sort, id";
 
 function build(row: PubWorkRow, media: Media[], tags: TagJoinRow[], defs: DefRow[], base: string): PublicWork {
@@ -111,4 +111,29 @@ export async function getPublicWork(
     prev: i > 0 ? list[i - 1]! : null,
     next: i >= 0 && i < list.length - 1 ? list[i + 1]! : null,
   };
+}
+
+/** One Studio entry: some words, some pictures or clips, or both. */
+export interface PublicPost {
+  id: number; createdAt: string; body: string; media: PublicMedia[];
+}
+
+interface PubPostRow { id: number; created_at: string; body: string }
+
+/** The Studio feed, newest first. A post shows if it has words or at least one finished upload. */
+export async function listPublicPosts(db: D1Database, site: Site, mediaBase: string): Promise<PublicPost[]> {
+  const where = "w.site_id = ? AND w.kind = 'post' AND w.visible = 1 AND w.deleted_at IS NULL";
+  const [posts, media] = await db.batch([
+    db.prepare(`SELECT w.id, w.created_at, w.body FROM works w WHERE ${where} ORDER BY w.created_at DESC, w.id DESC`).bind(site.id),
+    db.prepare(`SELECT m.* FROM media m JOIN works w ON w.id = m.work_id WHERE ${where} AND m.status = 'ready' ORDER BY m.work_id, m.sort, m.id`).bind(site.id),
+  ]);
+  const mediaByPost = groupBy((media!.results as any[]).map(rowToMedia), (m) => m.workId!);
+  return (posts!.results as unknown as PubPostRow[])
+    .map((p) => ({
+      id: p.id,
+      createdAt: p.created_at,
+      body: p.body,
+      media: (mediaByPost.get(p.id) ?? []).map((m) => toPublicMedia(m, mediaBase)),
+    }))
+    .filter((p) => p.body.trim() !== "" || p.media.length > 0);
 }

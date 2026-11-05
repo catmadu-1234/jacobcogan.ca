@@ -5,13 +5,13 @@ import { slugify } from "../slug";
 interface WorkRow {
   id: number; site_id: number; slug: string; title: string; visible: number; sort: number;
   fields_json: string; cover_media_id: number | null; created_at: string; updated_at: string;
-  deleted_at: string | null;
+  deleted_at: string | null; kind: Work["kind"]; body: string;
 }
 
 const rowToWork = (r: WorkRow): Work => ({
   id: r.id, siteId: r.site_id, slug: r.slug, title: r.title, visible: !!r.visible, sort: r.sort,
   fields: JSON.parse(r.fields_json), coverMediaId: r.cover_media_id,
-  createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at,
+  createdAt: r.created_at, updatedAt: r.updated_at, deletedAt: r.deleted_at, kind: r.kind, body: r.body,
 });
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
@@ -19,7 +19,7 @@ const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 export async function listWorks(
   db: D1Database,
   siteId: number,
-  opts: { q?: string; tagSlug?: string } = {},
+  opts: { q?: string; tagSlug?: string; kind?: Work["kind"] } = {},
 ): Promise<Work[]> {
   const binds: unknown[] = [];
   let join = "";
@@ -27,14 +27,15 @@ export async function listWorks(
     join = "JOIN work_tags wt ON wt.work_id = w.id JOIN tags t ON t.id = wt.tag_id AND t.slug = ?";
     binds.push(opts.tagSlug);
   }
-  binds.push(siteId);
-  let where = "w.site_id = ? AND w.deleted_at IS NULL";
+  const kind = opts.kind ?? "work";
+  binds.push(siteId, kind);
+  let where = "w.site_id = ? AND w.kind = ? AND w.deleted_at IS NULL";
   if (opts.q) {
     where += " AND w.title LIKE ? ESCAPE '\\'";
     binds.push(`%${escapeLike(opts.q)}%`);
   }
   const { results } = await db
-    .prepare(`SELECT w.* FROM works w ${join} WHERE ${where} ORDER BY w.sort ASC, w.id DESC`)
+    .prepare(`SELECT w.* FROM works w ${join} WHERE ${where} ORDER BY ${kind === "post" ? "w.created_at DESC" : "w.sort ASC"}, w.id DESC`)
     .bind(...binds)
     .all<WorkRow>();
   return results.map(rowToWork);
@@ -48,12 +49,12 @@ export async function getWork(db: D1Database, siteId: number, id: number): Promi
   return row ? rowToWork(row) : null;
 }
 
-export async function createWork(db: D1Database, siteId: number): Promise<Work> {
+export async function createWork(db: D1Database, siteId: number, kind: Work["kind"] = "work"): Promise<Work> {
   const res = await db
     .prepare(
-      "INSERT INTO works (site_id, slug, sort) VALUES (?, ?, (SELECT COALESCE(MIN(sort), 0) - 1 FROM works WHERE site_id = ?))",
+      "INSERT INTO works (site_id, slug, kind, sort) VALUES (?, ?, ?, (SELECT COALESCE(MIN(sort), 0) - 1 FROM works WHERE site_id = ?))",
     )
-    .bind(siteId, `pending-${crypto.randomUUID()}`, siteId)
+    .bind(siteId, `pending-${crypto.randomUUID()}`, kind, siteId)
     .run();
   const id = res.meta.last_row_id as number;
   await db.prepare("UPDATE works SET slug = ? WHERE id = ?").bind(`untitled-${id}`, id).run();
@@ -97,7 +98,7 @@ export async function updateWork(
   const updatedAt = nextUpdatedAt(cur.updatedAt);
   const res = await db
     .prepare(
-      `UPDATE works SET title = ?, slug = ?, visible = ?, fields_json = ?, cover_media_id = ?, updated_at = ?
+      `UPDATE works SET title = ?, slug = ?, visible = ?, fields_json = ?, cover_media_id = ?, body = ?, updated_at = ?
        WHERE id = ? AND site_id = ? AND deleted_at IS NULL AND updated_at = ?`,
     )
     .bind(
@@ -106,6 +107,7 @@ export async function updateWork(
       (patch.visible ?? cur.visible) ? 1 : 0,
       JSON.stringify({ ...cur.fields, ...(patch.fields ?? {}) }),
       patch.coverMediaId === undefined ? cur.coverMediaId : patch.coverMediaId,
+      patch.body ?? cur.body,
       updatedAt,
       id,
       siteId,

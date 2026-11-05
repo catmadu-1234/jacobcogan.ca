@@ -13,3 +13,10 @@ export function formatBytes(n: number): string {
 /** The free R2 allowance the storage meter measures against. */
 export const STORAGE_LIMIT_BYTES = 10 * GB;
 export const STORAGE_LIMIT_LABEL = "10 GB";
+
+/** "4 Nov 2026" for a stored timestamp, in the viewer's own time zone. */
+export function formatDay(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}

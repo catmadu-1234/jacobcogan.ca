@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { PublicMedia, PublicWork } from "@senka/core";
+import type { PublicMedia, PublicPost, PublicWork } from "@senka/core";
 import { buildSections } from "../src/lib/filters";
 import { AboutPage } from "../src/ui/AboutPage";
 import { FilterRail } from "../src/ui/FilterRail";
@@ -12,6 +12,8 @@ import { RootPage } from "../src/ui/RootPage";
 import { Rows } from "../src/ui/Rows";
 import { SiteFooter } from "../src/ui/SiteFooter";
 import { SiteHeader } from "../src/ui/SiteHeader";
+import { StudioPage } from "../src/ui/StudioPage";
+import { StudioPost } from "../src/ui/StudioPost";
 import { ViewToggle } from "../src/ui/ViewToggle";
 import { WorkPage } from "../src/ui/WorkPage";
 
@@ -28,7 +30,7 @@ const work = (slug: string, over: Partial<PublicWork> = {}): PublicWork => ({
 // React writes a few attribute names in camelCase (srcSet, fetchPriority, playsInline). HTML attribute names are
 // case-insensitive, so the assertions compare them in lower case.
 const html = (node: React.ReactElement) =>
-  renderToStaticMarkup(node).replace(/\b(srcSet|fetchPriority|playsInline|imageSrcSet|imageSizes|crossOrigin)=/g, (m) => m.toLowerCase());
+  renderToStaticMarkup(node).replace(/\b(srcSet|fetchPriority|playsInline|dateTime|imageSrcSet|imageSizes|crossOrigin)=/g, (m) => m.toLowerCase());
 
 describe("SiteHeader", () => {
   it("links home to the site's own root or to its path on the shared address", () => {
@@ -454,5 +456,53 @@ describe("RootPage", () => {
     const out = html(<RootPage sites={[{ name: "Site A", slug: "site-a" }, { name: "Site B", slug: "site-b" }]} />);
     expect(out).toContain('href="/site-a"');
     expect(out).toContain("Site B");
+  });
+});
+
+const post = (over: Partial<PublicPost> = {}): PublicPost => ({ id: 1, createdAt: "2026-11-04T18:30:00.000Z", body: "", media: [], ...over });
+
+describe("StudioPost", () => {
+  it("sets a thought as typography with its date, with no picture", () => {
+    const out = html(<StudioPost post={post({ body: "Work slowly.\n\nLook longer." })} tone={1} priority={false} />);
+    expect(out).toContain("Work slowly.");
+    expect(out).toContain("Look longer.");
+    expect(out).toContain('datetime="2026-11-04T18:30:00.000Z"');
+    expect(out).toContain("4 Nov 2026");
+    expect(out).toContain('data-tone="1"');
+    expect(out).toContain("data-short");
+    expect(out).not.toContain("<img");
+  });
+  it("shows a photo with its caption, linked to the original, lazy unless it leads the feed", () => {
+    const lazy = html(<StudioPost post={post({ body: "Studio light", media: [image()] })} tone={0} priority={false} />);
+    expect(lazy).toContain("Studio light");
+    expect(lazy).toContain('data-full="/media/1/7/original"');
+    expect(lazy).toContain('loading="lazy"');
+    expect(html(<StudioPost post={post({ media: [image()] })} tone={0} priority />)).not.toContain('loading="lazy"');
+  });
+  it("shows a short clip that loops silently, and a post of several pictures in order", () => {
+    const clip = html(<StudioPost post={post({ media: [video()] })} tone={0} priority={false} />);
+    expect(clip).toContain("<video");
+    expect(clip).toContain("data-autoplay");
+    expect(clip).toContain("muted");
+    const many = html(<StudioPost post={post({ media: [image({ src: "/a" }), image({ src: "/b" })] })} tone={0} priority={false} />);
+    expect(many.indexOf('src="/a"')).toBeLessThan(many.indexOf('src="/b"'));
+  });
+  it("escapes the words so nothing in a post can run as markup", () => {
+    expect(html(<StudioPost post={post({ body: "<script>x</script>" })} tone={0} priority={false} />)).not.toContain("<script>");
+  });
+});
+
+describe("StudioPage", () => {
+  it("lists posts newest first as given, with the Studio link marked current", () => {
+    const out = html(<StudioPage siteName="Jacob" basePath="/site-a" posts={[post({ id: 2, body: "second" }), post({ id: 1, body: "first" })]} links={[]} />);
+    expect(out.indexOf("second")).toBeLessThan(out.indexOf("first"));
+    expect(out).toMatch(/href="\/site-a\/studio"[^>]*aria-current="page"/);
+  });
+  it("only carries the full-size viewer when there is a picture to open", () => {
+    expect(html(<StudioPage siteName="J" basePath="" posts={[post({ body: "t" })]} links={[]} />)).not.toContain("data-lightbox");
+    expect(html(<StudioPage siteName="J" basePath="" posts={[post({ media: [image()] })]} links={[]} />)).toContain("data-lightbox");
+  });
+  it("says so when there is nothing yet", () => {
+    expect(html(<StudioPage siteName="J" basePath="" posts={[]} links={[]} />)).toContain("Nothing here yet.");
   });
 });

@@ -1,0 +1,30 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.heading {
+  margin-bottom: var(--space-5);
+}
+.eyebrow {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+}
+.title {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.lede {
+  margin-top: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.feed {
+  display: grid;
+  gap: var(--space-4);
+}
+.loading {
+  color: var(--muted);
+}

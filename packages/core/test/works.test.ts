@@ -140,3 +140,24 @@ describe("works", () => {
     expect(await restoreWork(db(), a, recent.id)).toBe(true);
   });
 });
+
+describe("studio posts", () => {
+  it("creates posts as their own kind, kept out of the works list", async () => {
+    const { a } = await seedTwoSites(env.DB);
+    const w = await createWork(env.DB, a);
+    const p = await createWork(env.DB, a, "post");
+    expect(w.kind).toBe("work");
+    expect(p).toMatchObject({ kind: "post", body: "" });
+    expect((await listWorks(env.DB, a)).map((x) => x.id)).toEqual([w.id]);
+    expect((await listWorks(env.DB, a, { kind: "post" })).map((x) => x.id)).toEqual([p.id]);
+  });
+
+  it("saves a post's body and lists newest posts first", async () => {
+    const { a } = await seedTwoSites(env.DB);
+    const first = await createWork(env.DB, a, "post");
+    const second = await createWork(env.DB, a, "post");
+    const saved = await updateWork(env.DB, a, first.id, { body: "a little thought", expectedUpdatedAt: first.updatedAt });
+    expect(saved).toMatchObject({ body: "a little thought" });
+    expect((await listWorks(env.DB, a, { kind: "post" })).map((x) => x.id)).toEqual([second.id, first.id]);
+  });
+});

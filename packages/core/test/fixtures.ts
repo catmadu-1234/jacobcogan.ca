@@ -15,6 +15,8 @@ import {
 
 export interface AddWorkOptions {
   title: string;
+  kind?: "work" | "post";
+  body?: string;
   visible?: boolean;
   fields?: Record<string, string>;
   tags?: string[];
@@ -27,9 +29,10 @@ export async function addWork(
   siteId: number,
   opts: AddWorkOptions,
 ): Promise<{ work: Work; media: Media[] }> {
-  const created = await createWork(db, siteId);
+  const created = await createWork(db, siteId, opts.kind);
   const saved = await updateWork(db, siteId, created.id, {
     title: opts.title,
+    body: opts.body,
     visible: opts.visible ?? true,
     fields: opts.fields,
     expectedUpdatedAt: created.updatedAt,

@@ -20,6 +20,10 @@ export interface Work {
   id: number; siteId: number; slug: string; title: string; visible: boolean; sort: number;
   fields: Record<string, string>; coverMediaId: number | null;
   createdAt: string; updatedAt: string; deletedAt: string | null;
+  /** A portfolio `work`, or a Studio `post` (a photo, a clip, or just a thought). */
+  kind: "work" | "post";
+  /** The text of a post. Works keep their words in `fields`. */
+  body: string;
 }
 export interface Media {
   id: number; siteId: number; workId: number | null; kind: "image" | "video";

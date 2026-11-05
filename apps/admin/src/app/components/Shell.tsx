@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Images, Plus, Settings, Tag } from "lucide-react";
+import { Images, Plus, Settings, Sparkles, Tag } from "lucide-react";
 import type { Route } from "../lib/router";
 import { Button } from "./Button";
 import styles from "./Shell.module.css";
@@ -27,6 +27,9 @@ export function Shell({ siteName, route, onAdd, children }: Props) {
           <a href="#/works" aria-current={onWorks ? "page" : undefined}>
             <Images size={18} aria-hidden="true" /> Works
           </a>
+          <a href="#/studio" aria-current={route.name === "studio" ? "page" : undefined}>
+            <Sparkles size={18} aria-hidden="true" /> Studio
+          </a>
           <a href="#/tags" aria-current={route.name === "tags" ? "page" : undefined}>
             <Tag size={18} aria-hidden="true" /> Tags
           </a>
@@ -42,6 +45,10 @@ export function Shell({ siteName, route, onAdd, children }: Props) {
         <a href="#/works" aria-current={onWorks ? "page" : undefined}>
           <Images size={22} aria-hidden="true" />
           Works
+        </a>
+        <a href="#/studio" aria-current={route.name === "studio" ? "page" : undefined}>
+          <Sparkles size={22} aria-hidden="true" />
+          Studio
         </a>
         <button type="button" className={styles.add} onClick={onAdd} aria-label="Add work">
           <span>

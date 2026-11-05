@@ -5,6 +5,7 @@ describe("parseHash", () => {
   it("maps hashes to routes", () => {
     expect(parseHash("#/works/12")).toEqual({ name: "editor", params: { id: "12" } });
     expect(parseHash("#/works")).toEqual({ name: "works", params: {} });
+    expect(parseHash("#/studio")).toEqual({ name: "studio", params: {} });
     expect(parseHash("#/tags")).toEqual({ name: "tags", params: {} });
     expect(parseHash("#/settings")).toEqual({ name: "settings", params: {} });
   });

@@ -3,7 +3,7 @@ import styles from "./SiteHeader.module.css";
 interface Props {
   siteName: string;
   basePath: string;
-  current: "work" | "about" | null;
+  current: "work" | "studio" | "about" | null;
 }
 
 export function SiteHeader({ siteName, basePath, current }: Props) {
@@ -19,6 +19,9 @@ export function SiteHeader({ siteName, basePath, current }: Props) {
       <nav className={styles.nav} aria-label="Main">
         <a href={home} aria-current={current === "work" ? "page" : undefined}>
           Work
+        </a>
+        <a href={`${basePath}/studio`} aria-current={current === "studio" ? "page" : undefined}>
+          Studio
         </a>
         <a href={`${basePath}/about`} aria-current={current === "about" ? "page" : undefined}>
           About

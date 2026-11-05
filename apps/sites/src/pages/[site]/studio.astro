@@ -1,0 +1,24 @@
+---
+import { env } from "cloudflare:workers";
+import { listPublicPosts } from "@senka/core";
+import Gallery from "../../layouts/Gallery.astro";
+import { describe, siteForPage } from "../../lib/page";
+import { StudioPage } from "../../ui/StudioPage";
+
+export const prerender = false;
+const site = await siteForPage(Astro.locals.site, Astro.params.site, env.DB);
+if (!site) return Astro.rewrite("/404");
+
+const posts = await listPublicPosts(env.DB, site, env.MEDIA_BASE);
+const firstPicture = posts.flatMap((p) => p.media).find((m) => m.kind === "image");
+---
+
+<Gallery
+  site={site}
+  title={`Studio — ${site.name}`}
+  description={describe(posts.find((p) => p.body.trim())?.body ?? "", `Studio — ${site.name}`)}
+  image={firstPicture?.src}
+  interactive
+>
+  <StudioPage siteName={site.name} basePath={Astro.locals.basePath} posts={posts} links={site.links} />
+</Gallery>

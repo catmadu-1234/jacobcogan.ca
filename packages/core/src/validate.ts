@@ -45,6 +45,7 @@ export const WorkPatch = z.object({
   slug: z.string().max(200).transform(slugify).refine((s) => s.length >= 1 && s.length <= 80).optional(),
   visible: z.boolean().optional(),
   fields: z.record(z.string(), z.string().max(10000)).optional(),
+  body: z.string().max(5000).optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
   coverMediaId: z.number().int().nullable().optional(),
   expectedUpdatedAt: z.string().min(1),

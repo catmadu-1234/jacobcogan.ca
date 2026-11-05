@@ -28,7 +28,7 @@ const artDir = path.join(root, ".wrangler", "demo-art");
 const ART_VERSION = 3; // bump when the pictures change, to refetch or redraw the cached ones
 const GENERATED_ONLY = process.argv.includes("--generated");
 // Picsum photo ids, picked for landscapes, architecture and still life. One per work, so no two works share a picture.
-const PHOTO_IDS = [1015, 1036, 1043, 1018, 1039, 1048, 1067, 1040, 1033, 1051, 1056, 1069, 1076, 1078, 164, 217, 274, 292];
+const PHOTO_IDS = [1015, 1036, 1043, 1018, 1039, 1048, 1067, 1040, 1033, 1051, 1056, 1069, 1076, 1078, 164, 217, 274, 292, 1002, 1003, 1004, 1006, 1008, 1010, 1012, 1013, 1016, 1019, 1020, 1021];
 
 /** A real photograph cropped to the given shape, or null when offline. */
 async function fetchPhoto(id, { width, height }) {
@@ -74,6 +74,26 @@ const SITES = [
   },
 ];
 
+// Studio posts: a thought, a captioned photo, or a few photos. `photos` counts pictures; none means words only.
+const POSTS = {
+  1: [
+    { body: "Work slowly. Look for longer than feels reasonable.", photos: 0 },
+    { body: "Morning light on the jetty. Third attempt at the same corner.", photos: 1 },
+    { body: "Thin layers, patient drying. The painting tells you when it's done.", photos: 0 },
+    { body: "", photos: 1 },
+    { body: "Studio this week: three panels, one very stubborn sky.", photos: 2 },
+    { body: "Every mistake is a good place to start the next thing.", photos: 0 },
+  ],
+  2: [
+    { body: "Graphite smudges the same way weather does.", photos: 0 },
+    { body: "Field notes from the coast, page 14.", photos: 1 },
+    { body: "Small books, small weather. Both fit in a pocket.", photos: 0 },
+    { body: "Etching proofs drying on the line.", photos: 2 },
+    { body: "", photos: 1 },
+    { body: "Quiet days are for drawing; loud days are for printing.", photos: 0 },
+  ],
+};
+
 const DESCRIPTIONS = {
   oil: "Layers of thin colour, scraped back and built up again over several weeks. Made at the window, in the afternoon.",
   ink: "Drawn quickly and without a plan, following the line wherever the pen wanted to go.",
@@ -116,9 +136,9 @@ async function artwork(siteIndex, workIndex) {
 try {
   const db = env.DB;
   const statements = [
-    db.prepare("DELETE FROM work_tags WHERE work_id BETWEEN 9001 AND 9099"),
-    db.prepare("DELETE FROM media WHERE id BETWEEN 9001 AND 9099"),
-    db.prepare("DELETE FROM works WHERE id BETWEEN 9001 AND 9099"),
+    db.prepare("DELETE FROM work_tags WHERE work_id BETWEEN 9001 AND 9199"),
+    db.prepare("DELETE FROM media WHERE id BETWEEN 9001 AND 9199"),
+    db.prepare("DELETE FROM works WHERE id BETWEEN 9001 AND 9199"),
     // local sign-in users for the dev servers (DEV_USER_EMAIL in apps/admin/.dev.vars)
     db.prepare("INSERT OR IGNORE INTO users (email, site_id) VALUES ('a@test.dev', 1), ('b@test.dev', 2)"),
   ];
@@ -179,13 +199,44 @@ try {
         );
       }
     }
+    // Studio posts, newest first, a few hours apart.
+    let postId = site.base + 100;
+    let photoNo = 9;
+    for (const [n, p] of POSTS[site.id].entries()) {
+      const id = postId++;
+      const created = new Date(Date.UTC(2026, 10, 4, 18, 0) - n * 31 * 3600 * 1000).toISOString();
+      statements.push(
+        db
+          .prepare("INSERT INTO works (id, site_id, slug, title, visible, sort, fields_json, kind, body, created_at) VALUES (?, ?, ?, '', 1, ?, '{}', 'post', ?, ?)")
+          .bind(id, site.id, `demo-post-${n + 1}`, 2000 + n, p.body, created),
+      );
+      for (let k = 0; k < p.photos; k++) {
+        const a = await artwork(site.index, photoNo++);
+        const mediaId = 9100 + (id - site.base - 100) * 3 + k + site.index * 40;
+        statements.push(
+          db
+            .prepare(
+              `INSERT INTO media (id, site_id, work_id, kind, status, mime, width, height, color, alt, variants_json, bytes, sort)
+               VALUES (?, ?, ?, 'image', 'ready', 'image/jpeg', ?, ?, ?, '', ?, ?, ?)`,
+            )
+            .bind(mediaId, site.id, id, a.width, a.height, a.color, JSON.stringify(a.variants), Object.values(a.files).reduce((t, b) => t + b.length, 0), k + 1),
+        );
+        for (const variant of a.variants) {
+          uploads.push(
+            env.MEDIA.put(`${site.id}/${mediaId}/${variant}`, new Uint8Array(a.files[variant]), {
+              httpMetadata: { contentType: variant === "original" ? "image/jpeg" : "image/webp" },
+            }),
+          );
+        }
+      }
+    }
     // bump the version so any cached page for this site is replaced
     statements.push(db.prepare("UPDATE sites SET content_version = content_version + 1 WHERE id = ?").bind(site.id));
   }
 
   await db.batch(statements);
   await Promise.all(uploads);
-  const { n } = await db.prepare("SELECT count(*) AS n FROM works WHERE id BETWEEN 9001 AND 9099 AND visible = 1").first();
+  const { n } = await db.prepare("SELECT count(*) AS n FROM works WHERE id BETWEEN 9001 AND 9199 AND visible = 1 AND kind = 'work'").first();
   console.log(`Demo content ready: ${n} visible works across site-a and site-b.`);
 } finally {
   await dispose();

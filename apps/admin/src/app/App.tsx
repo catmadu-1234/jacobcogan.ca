@@ -8,6 +8,7 @@ import { loadMe, useMe } from "./lib/me";
 import { useRoute } from "./lib/router";
 import { Editor } from "./screens/Editor";
 import { Settings } from "./screens/Settings";
+import { Studio } from "./screens/Studio";
 import { Tags } from "./screens/Tags";
 import { Works } from "./screens/Works";
 
@@ -38,6 +39,8 @@ export function App() {
           <Works onAdd={() => void createWorkAndOpen()} />
         ) : route.name === "editor" ? (
           <Editor key={route.params.id} id={Number(route.params.id)} />
+        ) : route.name === "studio" ? (
+          <Studio />
         ) : route.name === "tags" ? (
           <Tags />
         ) : (

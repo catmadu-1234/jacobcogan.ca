@@ -4,7 +4,7 @@ import { buildSitemap } from "../src/lib/sitemap";
 describe("buildSitemap", () => {
   it("lists the home page, about page and works as absolute URLs", () => {
     const xml = buildSitemap("https://art.example.com", "", ["blue-hour", "study"]);
-    for (const path of ["/", "/about", "/work/blue-hour", "/work/study"]) {
+    for (const path of ["/", "/studio", "/about", "/work/blue-hour", "/work/study"]) {
       expect(xml).toContain(`<loc>https://art.example.com${path}</loc>`);
     }
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);

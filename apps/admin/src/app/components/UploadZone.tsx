@@ -2,7 +2,7 @@ import { useRef, useState, type DragEvent } from "react";
 import { ImagePlus } from "lucide-react";
 import styles from "./UploadZone.module.css";
 
-const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/quicktime,video/webm";
+export const ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/quicktime,video/webm";
 
 interface Props {
   onFiles: (files: File[]) => void;

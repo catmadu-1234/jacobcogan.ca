@@ -9,6 +9,7 @@ import { rejectCrossSiteWrites } from "./guard";
 import { fieldRoutes } from "./routes/fields";
 import { mediaRoutes } from "./routes/media";
 import { siteRoutes } from "./routes/site";
+import { studioRoutes } from "./routes/studio";
 import { tagRoutes } from "./routes/tags";
 import { workRoutes } from "./routes/works";
 
@@ -32,6 +33,7 @@ export function createApp(opts: { getKey?: JWTVerifyGetKey } = {}) {
   api.route("/site", siteRoutes);
   api.route("/fields", fieldRoutes);
   api.route("/works", workRoutes);
+  api.route("/studio", studioRoutes);
   api.route("/tags", tagRoutes);
   api.route("/", mediaRoutes);
 

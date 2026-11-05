@@ -2,7 +2,7 @@ import { env } from "cloudflare:test";
 import { describe, it, expect } from "vitest";
 import {
   listPublicWorks, getPublicWork, toPublicMedia, getSiteById, createFieldDef,
-  updateFieldDef, softDeleteWork, type Media,
+  updateFieldDef, softDeleteWork, listPublicPosts, getWork, updateWork, type Media,
 } from "../src";
 import { seedTwoSites, addWork } from "./fixtures";
 
@@ -122,5 +122,40 @@ describe("public works", () => {
     const { a } = await seedTwoSites(db());
     for (let i = 0; i < 105; i++) await addWork(db(), a, { title: `Work ${i}` });
     expect(await listPublicWorks(db(), await site(a), "/media")).toHaveLength(105);
+  });
+});
+
+describe("studio posts", () => {
+  it("keeps posts out of the portfolio works, their navigation and their pages", async () => {
+    const { a } = await seedTwoSites(db());
+    const s = await site(a);
+    await addWork(db(), a, { title: "Painting" });
+    const { work: post } = await addWork(db(), a, { title: "", kind: "post", body: "hi" });
+    expect((await listPublicWorks(db(), s, "/media")).map((w) => w.title)).toEqual(["Painting"]);
+    expect(await getPublicWork(db(), s, post.slug, "/media")).toBeNull();
+    expect((await getPublicWork(db(), s, (await listPublicWorks(db(), s, "/media"))[0]!.slug, "/media"))!.next).toBeNull();
+  });
+
+  it("lists visible posts newest first: thoughts, photos and clips", async () => {
+    const { a, b } = await seedTwoSites(db());
+    const s = await site(a);
+    await addWork(db(), a, { title: "", kind: "post", body: "first thought", media: [] });
+    await addWork(db(), a, { title: "", kind: "post", body: "a caption", media: [{}] });
+    await addWork(db(), a, { title: "", kind: "post", body: "", media: [{ kind: "video" }] });
+    await addWork(db(), a, { title: "", kind: "post", body: "hidden", visible: false, media: [] });
+    await addWork(db(), a, { title: "", kind: "post", body: "pictureless and wordless", media: [] }).then(async (r) => {
+      await updateWork(db(), a, r.work.id, { body: "", expectedUpdatedAt: (await getWork(db(), a, r.work.id))!.updatedAt });
+    });
+    await addWork(db(), b, { title: "", kind: "post", body: "other site", media: [] });
+    await addWork(db(), a, { title: "", kind: "post", body: "unfinished upload", media: [{ ready: false }] });
+    const posts = await listPublicPosts(db(), s, "/media");
+    expect(posts.map((p) => [p.body, p.media.length])).toEqual([
+      ["unfinished upload", 0],
+      ["", 1],
+      ["a caption", 1],
+      ["first thought", 0],
+    ]);
+    expect(posts[1]!.media[0]!.kind).toBe("video");
+    expect(posts[0]).toMatchObject({ createdAt: expect.any(String), id: expect.any(Number) });
   });
 });

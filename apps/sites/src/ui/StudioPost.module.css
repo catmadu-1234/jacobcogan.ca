@@ -1,0 +1,94 @@
+.post,
+.thought {
+  break-inside: avoid;
+  margin: 0 0 var(--space-6);
+}
+.post {
+  display: grid;
+  gap: var(--space-2);
+}
+.zoom {
+  display: block;
+  cursor: zoom-in;
+}
+.media {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--ar);
+  background-color: var(--bg);
+  object-fit: cover;
+}
+.caption {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-1);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+}
+.caption p,
+.words p {
+  margin: 0;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.date {
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--text-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.thought {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  border: 1px solid var(--hair);
+  background: var(--wall);
+  color: var(--ink);
+}
+.thought[data-tone="1"] {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--accent) 12%, var(--wall));
+}
+.thought[data-tone="2"] {
+  border-color: transparent;
+  background: var(--ink);
+  color: var(--wall);
+}
+.thought[data-tone="2"] .date {
+  color: color-mix(in srgb, var(--wall) 65%, var(--ink));
+}
+.words {
+  display: grid;
+  gap: var(--space-3);
+  font-family: var(--font-title);
+  font-size: var(--text-lg);
+  font-style: var(--title-style);
+  font-weight: var(--title-weight);
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  text-wrap: pretty;
+}
+.thought[data-short] .words {
+  font-size: clamp(1.5rem, 2.6vw, 2.1rem);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .post,
+    .thought {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
