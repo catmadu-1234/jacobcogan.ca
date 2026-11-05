@@ -162,7 +162,7 @@ The defaults are: site-a uses `grotesk`, and site-b uses `serif-title` with acce
 | The research search suggested film grain and pixel art, which fit poorly | Rejected. The white-wall concept is the user's explicit choice. |
 
 ### Gallery redesign (Studio / Atelier)
-- **Home:** oversized artist name, a slow marquee of the mediums, then a left-margin **filter rail** (Medium, Project, Year) beside a justified grid, with a Grid / Index toggle. Index view is a typographic list; a work's picture appears beside its row on hover. Below 960px the rail becomes a swipeable band of chips.
+- **Home:** a small, quiet artist name, then a left-margin **filter rail** (Medium, Project, Year) beside a justified grid, with a Grid / Index toggle. Index view is a typographic list; a work's picture appears beside its row on hover. Below 960px the rail becomes a swipeable band of chips.
 - **Filters** are built from the work's details with the keys `medium`, `project` and `year`; tags filter through `?tag=` and appear on work pages. Counts are contextual. Every choice is a plain link to a server-rendered page (`?medium=oil&year=2024`), so filtering works without JavaScript.
 - **Filtering in place:** with JavaScript, a choice rearranges the tiles on the same page inside a View Transition (tiles glide, leavers dissolve, arrivals rise in a beat later; no whole-page cross-fade, which was the flash). Reduced motion applies the change at once.
 - **Work page:** sticky title and details beside the pictures, medium/project/year link back into the filtered gallery, and a full-bleed "Next work" finale (or "Back to the start" on the last).

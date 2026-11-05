@@ -1,17 +1,16 @@
 .hero {
   display: grid;
-  gap: var(--space-6);
-  padding: var(--space-7) 0 var(--space-6);
+  gap: var(--space-4);
+  padding: var(--space-6) 0 var(--space-5);
 }
 .name {
+  color: var(--muted);
   font-family: var(--font-title);
-  font-size: clamp(3rem, 12.5vw, 11rem);
+  font-size: var(--text-lg);
   font-style: var(--title-style);
-  font-weight: var(--title-weight);
-  letter-spacing: -0.045em;
-  line-height: 0.9;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 .foot {
   display: flex;
@@ -38,11 +37,9 @@
   text-transform: uppercase;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .name {
-    animation: rise 900ms var(--ease) both;
-  }
+  .name,
   .foot {
-    animation: rise 900ms 120ms var(--ease) both;
+    animation: rise 700ms var(--ease) both;
   }
 }
 @keyframes rise {

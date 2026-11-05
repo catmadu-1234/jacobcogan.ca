@@ -20,11 +20,9 @@ export function FilterRail({ sections, filters, basePath, view, activeTagName }:
     <aside className={styles.rail} data-filter-rail data-base={basePath} aria-label="Filter works">
       <div className={styles.head}>
         <h2 className={styles.heading}>Filter</h2>
-        {active ? (
-          <a className={styles.clear} data-clear href={pageHref(basePath, {}, view)}>
-            Clear
-          </a>
-        ) : null}
+        <a className={styles.clear} data-clear href={pageHref(basePath, {}, view)} hidden={!active || undefined}>
+          Clear all
+        </a>
       </div>
       {tag ? (
         <p className={styles.chip} data-tag-chip>

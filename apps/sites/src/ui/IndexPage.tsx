@@ -5,7 +5,6 @@ import { yearRange } from "../lib/meta";
 import { FilterRail } from "./FilterRail";
 import { Hero } from "./Hero";
 import { IndexList } from "./IndexList";
-import { Marquee } from "./Marquee";
 import { Rows } from "./Rows";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
@@ -27,8 +26,8 @@ interface Props {
 export function IndexPage({ siteName, basePath, works, tagline, links, rowHeight, showCaptions, view, filters }: Props) {
   const sections = buildSections(works, filters);
   const showing = filterWork(works, filters).length;
-  const words = sections.find((s) => s.key === "medium")?.options.map((o) => o.label) ?? [];
   const activeTagName = filters.tag ? works.flatMap((w) => w.tags).find((t) => t.slug === filters.tag)?.name : undefined;
+  const active = Object.keys(filters).length > 0;
   const hasRail = sections.length > 0 || !!filters.tag;
 
   return (
@@ -36,7 +35,6 @@ export function IndexPage({ siteName, basePath, works, tagline, links, rowHeight
       <SiteHeader siteName={siteName} basePath={basePath} current="work" />
       <main id="main">
         <Hero name={siteName} tagline={tagline} count={showing} total={works.length} years={yearRange(works)} />
-        <Marquee items={words} />
         {works.length === 0 ? (
           <p className={styles.empty}>Nothing here yet.</p>
         ) : (
@@ -44,6 +42,9 @@ export function IndexPage({ siteName, basePath, works, tagline, links, rowHeight
             <FilterRail sections={sections} filters={filters} basePath={basePath} view={view} activeTagName={activeTagName} />
             <section className={styles.results} aria-label="Works">
               <div className={styles.bar}>
+                <a className={styles.showAll} data-clear href={pageHref(basePath, {}, view)} hidden={!active || undefined}>
+                  Show all works
+                </a>
                 <ViewToggle basePath={basePath} filters={filters} view={view} />
               </div>
               {view === "index" ? (
@@ -53,8 +54,8 @@ export function IndexPage({ siteName, basePath, works, tagline, links, rowHeight
               )}
               <div className={styles.none} data-empty-state hidden={showing > 0 || undefined}>
                 <p>No work matches those choices.</p>
-                <a href={pageHref(basePath, {}, view)} data-clear>
-                  Clear the filters
+                <a className={styles.clearAll} href={pageHref(basePath, {}, view)} data-clear>
+                  Show all works
                 </a>
               </div>
             </section>

@@ -60,14 +60,14 @@ const { env, dispose } = await getPlatformProxy({
 const SITES = [
   {
     id: 1, index: 0, base: 9001, projects: ["Harbour Series", "Studies", "Interiors"], tags: ["Painting", "Drawing", "Photo", "Print"],
-    demoName: "Elio Marsh", placeholderName: "Site A",
+    demoName: "Jacob Cogan", placeholderName: "Site A", oldDemoName: "Elio Marsh",
     about: "Painter and printmaker working between oil, ink and light.\n\nBased by the sea. Taking commissions for the year ahead.",
     links: [{ label: "Instagram", url: "https://instagram.com/example" }, { label: "Shop", url: "https://example.com/shop" }],
     theme: { from: '{"preset":"grotesk"}', to: '{"preset":"grotesk","accent":"#E4452D"}' },
   },
   {
     id: 2, index: 1, base: 9011, projects: ["Weather Maps", "Small Books", "Field Notes"], tags: ["Painting", "Drawing", "Photo", "Print"],
-    demoName: "Mira Solano", placeholderName: "Site B",
+    demoName: "Senka", placeholderName: "Site B", oldDemoName: "Mira Solano",
     about: "Drawing, mostly. Slowly.\n\nMira works in graphite, etching and watercolour, and is making a book of small weather maps.",
     links: [{ label: "Instagram", url: "https://instagram.com/example" }],
     theme: { from: '{"preset":"serif-title","accent":"#7A3E2E"}', to: '{"preset":"serif-title","accent":"#C2693F"}' },
@@ -131,7 +131,7 @@ try {
   for (const site of SITES) {
     // Friendly demo names, but only where the owner has not already chosen their own.
     statements.push(
-      db.prepare("UPDATE sites SET name = ? WHERE id = ? AND name = ?").bind(site.demoName, site.id, site.placeholderName),
+      db.prepare("UPDATE sites SET name = ? WHERE id = ? AND name IN (?, ?)").bind(site.demoName, site.id, site.placeholderName, site.oldDemoName),
       db.prepare("UPDATE sites SET about = ? WHERE id = ? AND about = ''").bind(site.about, site.id),
       db.prepare("UPDATE sites SET links_json = ? WHERE id = ? AND links_json = '[]'").bind(JSON.stringify(site.links), site.id),
       db.prepare("UPDATE sites SET theme_json = ? WHERE id = ? AND theme_json = ?").bind(site.theme.to, site.id, site.theme.from),

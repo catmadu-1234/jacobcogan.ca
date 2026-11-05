@@ -7,7 +7,6 @@ import { FilterRail } from "../src/ui/FilterRail";
 import { Hero } from "../src/ui/Hero";
 import { IndexList } from "../src/ui/IndexList";
 import { IndexPage } from "../src/ui/IndexPage";
-import { Marquee } from "../src/ui/Marquee";
 import { MediaView } from "../src/ui/MediaView";
 import { RootPage } from "../src/ui/RootPage";
 import { Rows } from "../src/ui/Rows";
@@ -66,18 +65,6 @@ describe("Hero", () => {
   });
   it("escapes the name", () => {
     expect(html(<Hero name={"<b>x</b>"} tagline="" count={0} years="" />)).not.toContain("<b>x</b>");
-  });
-});
-
-describe("Marquee", () => {
-  it("repeats its words so the loop has no gap, and is hidden from screen readers", () => {
-    const out = html(<Marquee items={["Painting", "Drawing"]} />);
-    expect(out).toContain('aria-hidden="true"');
-    expect(out.match(/Painting/g)).toHaveLength(2);
-    expect(out.match(/Drawing/g)).toHaveLength(2);
-  });
-  it("renders nothing without words", () => {
-    expect(html(<Marquee items={[]} />)).toBe("");
   });
 });
 
@@ -241,10 +228,11 @@ describe("FilterRail", () => {
     expect(out).toMatch(/data-value="ink-on-paper"[^>]*data-empty|data-empty[^>]*data-value="ink-on-paper"/);
   });
 
-  it("offers a way to clear everything only while a filter is on", () => {
-    expect(rail()).not.toContain("data-clear");
+  it("always carries a clear button, hidden until a filter is on", () => {
+    expect(rail()).toMatch(/data-clear[^>]*hidden/);
     const on = rail({ medium: "ink-on-paper" });
     expect(on).toMatch(/data-clear[^>]*href="\/site-a"|href="\/site-a"[^>]*data-clear/);
+    expect(on).not.toMatch(/data-clear[^>]*hidden/);
   });
 
   it("shows an active tag filter by name, with a way to remove it", () => {

@@ -20,12 +20,18 @@
   text-transform: uppercase;
 }
 .clear {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
   font-size: var(--text-xs);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.clear[hidden] {
+  display: none;
 }
 .clear:hover {
-  color: var(--accent-text);
+  background: var(--ink);
+  color: var(--wall);
 }
 .chip a {
   display: inline-block;
