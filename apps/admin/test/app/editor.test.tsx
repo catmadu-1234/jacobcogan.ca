@@ -118,6 +118,17 @@ describe("Editor", () => {
     expect(screen.getAllByRole("note").some((n) => /four digits/i.test(n.textContent ?? ""))).toBe(true);
   });
 
+  it("shows the explanation on hover, then hides it again", async () => {
+    stubApi(() => undefined);
+    render(ui());
+    const button = await screen.findByRole("button", { name: "About Medium" });
+    expect(screen.queryByRole("note")).toBeNull();
+    fireEvent.mouseEnter(button.parentElement!);
+    expect(screen.getByRole("note").textContent).toMatch(/made of/i);
+    fireEvent.mouseLeave(button.parentElement!);
+    expect(screen.queryByRole("note")).toBeNull();
+  });
+
   it("saves several values for a facet together with the other facets", async () => {
     const calls = stubApi((c) => (c.method === "PATCH" ? json(200, { work: work({ updatedAt: "t2" }), facets: emptyFacets }) : undefined), {
       facets: { ...emptyFacets, project: [{ id: 9, name: "Harbour" }] },
