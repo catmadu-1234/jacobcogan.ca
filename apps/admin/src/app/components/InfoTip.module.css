@@ -1,6 +1,6 @@
 .tip {
+  position: relative;
   display: inline-flex;
-  flex-direction: column;
   vertical-align: middle;
 }
 .button {
@@ -26,10 +26,18 @@
 .button[aria-expanded="true"] {
   color: var(--ink);
 }
+/* Floats over the page: it takes no room, so nothing underneath moves. */
 .text {
-  margin: var(--space-2) 0 0;
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(52ch, calc(100vw - 2 * var(--gutter)));
+  margin: 0;
   padding: var(--space-3);
-  max-width: 52ch;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15);
   border: 1px solid var(--hair);
   border-radius: var(--radius);
   background: var(--paper);
