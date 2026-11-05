@@ -86,3 +86,28 @@ export async function setWorkFacets(
   await db.batch(statements);
   return facetsForWork(db, workId);
 }
+
+/**
+ * Renames a facet value everywhere it is used. If the new name is the same value as another one in the same facet
+ * (matched by slug), the two merge and every work that had this one gets the other. Returns the surviving value.
+ */
+export async function renameFacetValue(db: D1Database, siteId: number, id: number, name: string): Promise<FacetValue | null> {
+  const cur = await db.prepare("SELECT * FROM facet_values WHERE id = ? AND site_id = ?").bind(id, siteId).first<FacetRow>();
+  if (!cur) return null;
+  const clean = name.trim();
+  const slug = tagSlug(clean);
+  const other = await db
+    .prepare("SELECT * FROM facet_values WHERE site_id = ? AND facet = ? AND slug = ? AND id != ?")
+    .bind(siteId, cur.facet, slug, id)
+    .first<FacetRow>();
+  if (other) {
+    await db.batch([
+      db.prepare("INSERT OR IGNORE INTO work_facet_values (work_id, value_id) SELECT work_id, ? FROM work_facet_values WHERE value_id = ?").bind(other.id, id),
+      db.prepare("DELETE FROM work_facet_values WHERE value_id = ?").bind(id),
+      db.prepare("DELETE FROM facet_values WHERE id = ? AND site_id = ?").bind(id, siteId),
+    ]);
+    return rowToValue(other);
+  }
+  await db.prepare("UPDATE facet_values SET name = ?, slug = ? WHERE id = ? AND site_id = ?").bind(clean, slug, id, siteId).run();
+  return rowToValue((await db.prepare("SELECT * FROM facet_values WHERE id = ?").bind(id).first<FacetRow>())!);
+}

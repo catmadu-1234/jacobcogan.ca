@@ -136,6 +136,19 @@ describe("works API", () => {
     expect(byText.map((w) => w.title)).toEqual(["Blue Hour"]);
   });
 
+  it("renames a facet value for every work, and refuses another site's", async () => {
+    await seedTwoSites();
+    const w = await newWork();
+    await call(A, "PATCH", `/api/works/${w.id}`, { facets: { medium: ["Oli"] }, expectedUpdatedAt: w.updatedAt });
+    const [value] = ((await (await call(A, "GET", "/api/facets")).json()) as any).medium;
+    expect((await call(B, "PATCH", `/api/facets/${value.id}`, { name: "Oil" })).status).toBe(404);
+    const res = await call(A, "PATCH", `/api/facets/${value.id}`, { name: "Oil" });
+    expect(((await res.json()) as any).name).toBe("Oil");
+    const read = (await (await call(A, "GET", `/api/works/${w.id}`)).json()) as any;
+    expect(read.facets.medium.map((v: any) => v.name)).toEqual(["Oil"]);
+    expect((await call(A, "PATCH", `/api/facets/${value.id}`, { name: "  " })).status).toBe(400);
+  });
+
   it("rejects a year that is not four digits, with the field named", async () => {
     await seedTwoSites();
     const w = await newWork();
