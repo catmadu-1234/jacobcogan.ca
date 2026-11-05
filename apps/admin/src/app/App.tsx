@@ -7,6 +7,7 @@ import { createWorkAndOpen } from "./lib/addWork";
 import { loadMe, useMe } from "./lib/me";
 import { useRoute } from "./lib/router";
 import { Editor } from "./screens/Editor";
+import { SidePicker } from "./screens/SidePicker";
 import { Settings } from "./screens/Settings";
 import { Studio } from "./screens/Studio";
 import { Tags } from "./screens/Tags";
@@ -17,6 +18,8 @@ export function App() {
   const me = useMe();
 
   if (me.status === "loading") return <p aria-busy="true" style={{ padding: "2rem" }}>Loading…</p>;
+  // No login yet: a 401 here is the "choose-side" question (any other 401 reloads the page for Access before this).
+  if (me.status === "error" && me.code === 401) return <SidePicker />;
   if (me.status === "error") {
     return (
       <EmptyState
@@ -34,7 +37,7 @@ export function App() {
 
   return (
     <>
-      <Shell siteName={me.site.name} route={route} onAdd={() => void createWorkAndOpen()}>
+      <Shell siteName={me.site.name} openSides={me.email === "open-sides"} route={route} onAdd={() => void createWorkAndOpen()}>
         {route.name === "works" ? (
           <Works onAdd={() => void createWorkAndOpen()} />
         ) : route.name === "editor" ? (

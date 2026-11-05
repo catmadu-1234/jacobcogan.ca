@@ -58,7 +58,8 @@ export async function api<T = unknown>(method: string, path: string, body?: unkn
       parsed = text;
     }
   }
-  if (res.status === 401) onUnauthenticated();
+  // "choose-side" is the open-sides picker asking a question, not a lost session: reloading would not help.
+  if (res.status === 401 && parsed?.error !== "choose-side") onUnauthenticated();
   if (!res.ok) throw new ApiError(res.status, parsed);
   return parsed as T;
 }

@@ -112,3 +112,14 @@
   color: var(--ink);
   font-weight: 500;
 }
+
+.side {
+  margin-top: var(--space-7);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  text-align: center;
+}
+.side a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

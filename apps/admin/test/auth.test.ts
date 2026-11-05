@@ -80,3 +80,60 @@ describe("Cloudflare Access auth", () => {
     expect(await res.json()).toEqual({ error: "not-found" });
   });
 });
+
+describe("open sides mode (no login yet)", () => {
+  const open = { OPEN_SIDES: "1" } as const;
+  const get = (path: string, cookie?: string, bindings: Record<string, string> = open) =>
+    request(path, cookie ? { headers: { cookie } } : {}, bindings);
+
+  it("is off unless switched on: a plain request is still refused", async () => {
+    await seedTwoSites();
+    expect((await get("/api/me", "senka_side=site-a", {})).status).toBe(401);
+    expect((await get("/api/sides", undefined, {})).status).toBe(404);
+  });
+
+  it("asks which side when none is chosen, without making the page reload itself", async () => {
+    await seedTwoSites();
+    const res = await get("/api/me");
+    expect(res.status).toBe(401);
+    expect(await res.json()).toEqual({ error: "choose-side" });
+  });
+
+  it("lists the sides by name so the picker can show them", async () => {
+    await seedTwoSites();
+    expect(await (await get("/api/sides")).json()).toEqual([
+      { slug: "site-a", name: "Site A" },
+      { slug: "site-b", name: "Site B" },
+    ]);
+  });
+
+  it("remembers the chosen side in a cookie and goes back to the admin", async () => {
+    await seedTwoSites();
+    const res = await get("/api/side/site-b");
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location")).toBe("/");
+    const cookie = res.headers.get("set-cookie")!;
+    expect(cookie).toContain("senka_side=site-b");
+    expect(cookie).toMatch(/HttpOnly/i);
+    expect(cookie).toMatch(/SameSite=Strict/i);
+  });
+
+  it("works on the chosen side only, and ignores an unknown one", async () => {
+    await seedTwoSites();
+    expect(((await (await get("/api/me", "senka_side=site-b")).json()) as any).site.slug).toBe("site-b");
+    expect((await get("/api/me", "senka_side=nope")).status).toBe(401);
+    expect((await get("/api/side/nope")).status).toBe(404);
+  });
+
+  it("lets you switch back to the picker", async () => {
+    const res = await get("/api/side/none");
+    expect(res.status).toBe(302);
+    expect(res.headers.get("set-cookie")).toMatch(/senka_side=;.*Max-Age=0/i);
+  });
+
+  it("does not let another website switch your side", async () => {
+    await seedTwoSites();
+    const res = await request("/api/side/site-a", { headers: { "sec-fetch-site": "cross-site" } }, open);
+    expect(res.status).toBe(403);
+  });
+});

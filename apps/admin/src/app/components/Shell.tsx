@@ -6,12 +6,14 @@ import styles from "./Shell.module.css";
 
 interface Props {
   siteName: string;
+  /** True while the admin has no login: show a way back to the side picker. */
+  openSides?: boolean;
   route: Route;
   onAdd: () => void;
   children: ReactNode;
 }
 
-export function Shell({ siteName, route, onAdd, children }: Props) {
+export function Shell({ siteName, openSides, route, onAdd, children }: Props) {
   const onWorks = route.name === "works" || route.name === "editor";
   return (
     <div className={styles.shell}>
@@ -39,7 +41,14 @@ export function Shell({ siteName, route, onAdd, children }: Props) {
         </nav>
       </aside>
 
-      <main className={styles.content}>{children}</main>
+      <main className={styles.content}>
+        {children}
+        {openSides ? (
+          <p className={styles.side}>
+            Working on {siteName}. <a href="/api/side/none">Switch side</a>
+          </p>
+        ) : null}
+      </main>
 
       <nav className={styles.tabbar} aria-label="Main">
         <a href="#/works" aria-current={onWorks ? "page" : undefined}>

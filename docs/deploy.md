@@ -159,3 +159,7 @@ Files in storage are not backed up. Keep your originals.
 | Changes don't show on the portfolio | Hard-refresh. Pages are cached per version of the content; every save in the admin makes a new version. |
 | A video won't play for visitors | It's probably an iPhone video in HEVC format. Re-export as "Most Compatible" (Settings → Camera → Formats). The admin warns you when it spots this. |
 | The GitHub deploy step fails with a permissions error | The API token is missing D1, R2 or Workers KV edit permission (step 8 above, point 2). |
+
+## Open sides mode (no login yet)
+
+While Cloudflare Access is not set up, `apps/admin/wrangler.jsonc` has `"OPEN_SIDES": "1"`. The admin then opens on a "Whose side?" screen; picking a site is remembered in a cookie, and there is a "Switch side" link at the bottom of every screen. **Anyone who knows the admin address can edit either site**, so keep the address private. To turn the login on, follow section 1 step 8, then remove `OPEN_SIDES` from `vars` and deploy the admin again.

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { JWTVerifyGetKey } from "jose";
 import { getSiteById, storageBytes } from "@senka/core";
-import { accessAuth } from "./auth";
+import { accessAuth, openSideRoutes } from "./auth";
 import { bumpOnWrite } from "./bump";
 import { runCleanup } from "./cron";
 import type { AppEnv } from "./env";
@@ -19,6 +19,7 @@ export type { AppEnv, Env } from "./env";
 
 export function createApp(opts: { getKey?: JWTVerifyGetKey } = {}) {
   const api = new Hono<AppEnv>();
+  api.route("/", openSideRoutes); // before the login check: choosing a side is how you get in
   api.use("*", accessAuth(opts));
   api.use("*", rejectCrossSiteWrites());
   // Any write invalidates the public site's cache, which is keyed by this version.
