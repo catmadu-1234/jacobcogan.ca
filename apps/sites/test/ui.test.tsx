@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { tagSlug } from "@senka/core/slug";
 import type { PublicMedia, PublicPost, PublicWork } from "@senka/core";
 import { buildSections } from "../src/lib/filters";
 import { AboutPage } from "../src/ui/AboutPage";
@@ -23,8 +24,17 @@ const image = (over: Partial<PublicMedia> = {}): PublicMedia => ({
 });
 const video = (over: Partial<PublicMedia> = {}): PublicMedia =>
   image({ kind: "video", duration: 12, src: "/media/1/8/original", srcset: null, poster: "/media/1/8/poster", full: "/media/1/8/original", ...over });
+const emptyFacets = { medium: [], project: [], content: [], exhibition: [] };
+/** A work with these facet values (names) and, optionally, a Year detail. */
+const catalogued = (slug: string, v: { medium?: string[]; project?: string[]; content?: string[]; exhibition?: string[]; year?: string }) =>
+  work(slug, {
+    facets: Object.fromEntries(
+      (["medium", "project", "content", "exhibition"] as const).map((k) => [k, (v[k] ?? []).map((name) => ({ name, slug: tagSlug(name) }))]),
+    ) as PublicWork["facets"],
+    details: v.year ? [{ key: "year", label: "Year", value: v.year, type: "text" as const }] : [],
+  });
 const work = (slug: string, over: Partial<PublicWork> = {}): PublicWork => ({
-  slug, title: slug.replace("-", " "), details: [], tags: [], media: [image()], cover: image(), updatedAt: "", ...over,
+  slug, title: slug.replace("-", " "), details: [], facets: { medium: [], project: [], content: [], exhibition: [] }, media: [image()], cover: image(), updatedAt: "", ...over,
 });
 
 // React writes a few attribute names in camelCase (srcSet, fetchPriority, playsInline). HTML attribute names are
@@ -128,17 +138,17 @@ describe("Rows", () => {
   });
 
   it("carries what the in-place filter needs on every tile, and hides tiles the filters rule out", () => {
-    const a = work("a", { tags: [{ name: "Oil", slug: "oil" }], details: [{ key: "medium", label: "Medium", value: "Oil on linen", type: "text" }, { key: "year", label: "Year", value: "2024", type: "text" }] });
-    const b = work("b", { details: [{ key: "medium", label: "Medium", value: "Ink", type: "text" }] });
+    const a = work("a", { facets: { ...emptyFacets, medium: [{ name: "Oil on linen", slug: "oil-on-linen" }, { name: "Ink", slug: "ink" }], content: [{ name: "Dogs", slug: "dogs" }] }, details: [{ key: "year", label: "Year", value: "2024", type: "text" }] });
+    const b = work("b", { facets: { ...emptyFacets, medium: [{ name: "Ink", slug: "ink" }] } });
     const all = html(<Rows works={[a, b]} basePath="" rowHeight={320} showCaptions={false} />);
-    expect(all).toContain('data-medium="oil-on-linen"');
+    expect(all).toContain('data-medium="oil-on-linen ink"');
     expect(all).toContain('data-year="2024"');
-    expect(all).toContain('data-tags="oil"');
+    expect(all).toContain('data-content="dogs"');
     expect(all.match(/data-work=/g)).toHaveLength(2);
     expect(all).not.toMatch(/<li[^>]*\shidden/);
-    const filtered = html(<Rows works={[a, b]} basePath="" rowHeight={320} showCaptions={false} filters={{ medium: "ink" }} />);
+    const filtered = html(<Rows works={[a, b]} basePath="" rowHeight={320} showCaptions={false} filters={{ content: "dogs" }} />);
     expect(filtered.match(/<li[^>]*hidden/g)).toHaveLength(1);
-    expect(filtered).toMatch(/<li[^>]*data-medium="oil-on-linen"[^>]*hidden|<li[^>]*hidden[^>]*data-medium="oil-on-linen"/);
+    expect(filtered).toMatch(/<li[^>]*data-work="b"[^>]*hidden|<li[^>]*hidden[^>]*data-work="b"/);
   });
 
   it("always shows titles under the images when the site asks for captions", () => {
@@ -151,7 +161,7 @@ describe("Rows", () => {
 
 describe("IndexList", () => {
   const works = [
-    work("blue-hour", { title: "Blue Hour", tags: [{ name: "Painting", slug: "painting" }, { name: "Oil", slug: "oil" }], details: [{ key: "year", label: "Year", value: "2025", type: "text" }] }),
+    work("blue-hour", { title: "Blue Hour", facets: { ...emptyFacets, medium: [{ name: "Painting", slug: "painting" }, { name: "Oil", slug: "oil" }] }, details: [{ key: "year", label: "Year", value: "2025", type: "text" }] }),
     work("quiet-room", { title: "Quiet Room", cover: video() }),
   ];
   it("lists each work as a numbered row linking to its page, with its tags and year", () => {
@@ -173,7 +183,7 @@ describe("IndexList", () => {
     expect(html(<IndexList works={[work("x", { title: "<script>alert(1)</script>" })]} basePath="" />)).not.toContain("<script>alert(1)");
   });
   it("carries the same filter data as the grid and hides rows the filters rule out", () => {
-    const a = work("a", { details: [{ key: "project", label: "Project", value: "Studies", type: "text" }] });
+    const a = catalogued("a", { project: ["Studies"] });
     const b = work("b");
     const out = html(<IndexList works={[a, b]} basePath="" filters={{ project: "studies" }} />);
     expect(out.match(/data-work=/g)).toHaveLength(2);
@@ -197,7 +207,7 @@ describe("SiteFooter", () => {
 
 describe("FilterRail", () => {
   const w = (slug: string, medium: string, year: string, project?: string) =>
-    work(slug, { details: [{ key: "medium", label: "Medium", value: medium, type: "text" }, ...(project ? [{ key: "project", label: "Project", value: project, type: "text" as const }] : []), { key: "year", label: "Year", value: year, type: "text" }] });
+    catalogued(slug, { medium: [medium], project: project ? [project] : [], year });
   const works = [w("a", "Oil on linen", "2025", "Harbour"), w("b", "Oil on linen", "2024"), w("c", "Ink on paper", "2024", "Harbour")];
   const rail = (filters = {}, extra: object = {}) =>
     html(<FilterRail sections={buildSections(works, filters)} filters={filters} basePath="/site-a" view="grid" {...extra} />);
@@ -235,13 +245,6 @@ describe("FilterRail", () => {
     const on = rail({ medium: "ink-on-paper" });
     expect(on).toMatch(/data-clear[^>]*href="\/site-a"|href="\/site-a"[^>]*data-clear/);
     expect(on).not.toMatch(/data-clear[^>]*hidden/);
-  });
-
-  it("shows an active tag filter by name, with a way to remove it", () => {
-    const out = rail({ tag: "oil" }, { activeTagName: "Oil" });
-    expect(out).toContain("Oil");
-    expect(out).toMatch(/href="\/site-a"/);
-    expect(out).toContain("data-tag-chip");
   });
 
   it("keeps the current view in every link", () => {
@@ -290,18 +293,22 @@ describe("WorkPage", () => {
   const base = { siteName: "Jacob", basePath: "/site-a", links: [], prev: null, next: null, wrapped: false };
   const neighbour = (slug: string, title: string) => ({ slug, title, cover: image({ src: `/media/1/${slug}/w1200` }) });
 
-  it("shows the title, details, linked tags and previous work", () => {
+  it("shows the title, details, linked facet values and previous work", () => {
     const w = work("blue-hour", {
       title: "Blue Hour",
-      details: [{ key: "medium", label: "Medium", value: "Oil", type: "text" }],
-      tags: [{ name: "Oil", slug: "oil" }],
+      details: [{ key: "year", label: "Year", value: "2024", type: "text" }],
+      facets: { ...emptyFacets, medium: [{ name: "Oil", slug: "oil" }, { name: "Paper", slug: "paper" }], exhibition: [{ name: "Spring Show", slug: "spring-show" }] },
     });
     const out = html(<WorkPage {...base} work={w} prev={neighbour("newer", "Newer")} next={neighbour("older", "Older")} />);
     expect(out).toContain("<h1");
     expect(out).toContain("Blue Hour");
     expect(out).toContain("Medium");
-    expect(out).toContain("Oil");
-    expect(out).toContain('href="/site-a?tag=oil"');
+    expect(out).toContain('href="/site-a?medium=oil"');
+    expect(out).toContain('href="/site-a?medium=paper"');
+    expect(out).toContain("Exhibition");
+    expect(out).toContain('href="/site-a?exhibition=spring-show"');
+    expect(out).toContain('href="/site-a?year=2024"');
+    expect(out).not.toContain("Content");
     expect(out).toMatch(/<a[^>]*rel="prev"[^>]*href="\/site-a\/work\/newer"|<a[^>]*href="\/site-a\/work\/newer"[^>]*rel="prev"/);
   });
 
@@ -350,12 +357,9 @@ describe("WorkPage", () => {
   });
 
   it("links medium, project and year back into the gallery, filtered to that value", () => {
-    const out = html(<WorkPage {...base} work={work("a", { details: [
-      { key: "medium", label: "Medium", value: "Oil on linen", type: "text" },
-      { key: "project", label: "Project", value: "Harbour Series", type: "text" },
-      { key: "year", label: "Year", value: "2025", type: "text" },
-      { key: "dimensions", label: "Dimensions", value: "90 × 120 cm", type: "text" },
-    ] })} />);
+    const w = catalogued("a", { medium: ["Oil on linen"], project: ["Harbour Series"], year: "2025" });
+    w.details.push({ key: "dimensions", label: "Dimensions", value: "90 × 120 cm", type: "text" });
+    const out = html(<WorkPage {...base} work={w} />);
     expect(out).toContain('href="/site-a?medium=oil-on-linen"');
     expect(out).toContain('href="/site-a?project=harbour-series"');
     expect(out).toContain('href="/site-a?year=2025"');
@@ -394,9 +398,8 @@ describe("AboutPage", () => {
 
 describe("IndexPage", () => {
   const props = { siteName: "Jacob", basePath: "/site-a", rowHeight: 320, showCaptions: false, tagline: "Painter.", links: [], view: "grid" as const, filters: {} };
-  const detail = (key: string, label: string, value: string) => ({ key, label, value, type: "text" as const });
-  const a = work("a", { details: [detail("medium", "Medium", "Oil"), detail("year", "Year", "2024")] });
-  const b = work("b", { details: [detail("medium", "Medium", "Ink"), detail("year", "Year", "2022")] });
+  const a = catalogued("a", { medium: ["Oil"], year: "2024" });
+  const b = catalogued("b", { medium: ["Ink"], year: "2022" });
 
   it("opens with the artist's name, counting the works and spanning their years", () => {
     const out = html(<IndexPage {...props} works={[a, b]} />);

@@ -113,6 +113,16 @@ After this, every change that lands on `main` is checked, tested and published o
 
 Pull requests run the checks only. Merging to `main` also applies database changes, then publishes the admin and the sites.
 
+## Catalogue facets (one-off data move)
+
+Migration `0003_facets.sql` adds the Medium, Project, Content and Exhibition vocabularies. After it is applied to a
+database that already has works, copy their old Medium/Project text into the new facets (safe to run again, never
+removes anything):
+
+```bash
+node scripts/backfill-facets.mjs --remote
+```
+
 ## 3. Your own domains (later)
 
 Your domain's DNS needs to be on Cloudflare (free; the dashboard walks you through it).

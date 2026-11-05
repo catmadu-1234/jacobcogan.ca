@@ -1,6 +1,6 @@
 import type { PublicMedia, PublicWork } from "@senka/core";
 import type { SiteLink } from "@senka/core/types";
-import { facetsOf, pageHref, type FacetKey } from "../lib/filters";
+import { facetsOf, pageHref, type FacetKey, type TagFacetKey } from "../lib/filters";
 import { safeHttpUrl } from "../lib/url";
 import { Lightbox } from "./Lightbox";
 import { MediaView } from "./MediaView";
@@ -25,7 +25,8 @@ interface Props {
   links: SiteLink[];
 }
 
-const FACET_KEYS: string[] = ["medium", "project", "year"];
+const FACET_KEYS: string[] = ["year"];
+const TAG_FACET_LABELS: [TagFacetKey, string][] = [["medium", "Medium"], ["project", "Project"], ["content", "Content"], ["exhibition", "Exhibition"]];
 
 export function WorkPage({ siteName, basePath, work, prev, next, wrapped, links }: Props) {
   const title = work.title.trim() || "Untitled";
@@ -33,6 +34,7 @@ export function WorkPage({ siteName, basePath, work, prev, next, wrapped, links 
   const facets = facetsOf(work);
   const short = work.details.filter((d) => d.type !== "longtext");
   const notes = work.details.filter((d) => d.type === "longtext");
+  const hasFacets = TAG_FACET_LABELS.some(([key]) => work.facets[key].length > 0);
   const nextCover = next?.cover ? (next.cover.kind === "video" ? next.cover.poster : next.cover.src) : null;
   return (
     <div className="page">
@@ -41,8 +43,23 @@ export function WorkPage({ siteName, basePath, work, prev, next, wrapped, links 
         <div className={styles.layout}>
           <section className={styles.caption}>
             <h1 className={styles.title}>{title}</h1>
-            {short.length > 0 ? (
+            {short.length > 0 || hasFacets ? (
               <dl className={styles.details}>
+                {TAG_FACET_LABELS.map(([key, label]) =>
+                  work.facets[key].length > 0 ? (
+                    <div key={key} className={styles.detail}>
+                      <dt>{label}</dt>
+                      <dd>
+                        {work.facets[key].map((v, i) => (
+                          <span key={v.slug}>
+                            {i > 0 ? ", " : null}
+                            <a href={pageHref(basePath, { [key]: v.slug }, "grid")}>{v.name}</a>
+                          </span>
+                        ))}
+                      </dd>
+                    </div>
+                  ) : null,
+                )}
                 {short.map((d) => {
                   const link = d.type === "url" ? safeHttpUrl(d.value) : null;
                   const facet = FACET_KEYS.includes(d.key) ? facets[d.key as FacetKey] : undefined;
@@ -71,15 +88,6 @@ export function WorkPage({ siteName, basePath, work, prev, next, wrapped, links 
                 <p>{d.value}</p>
               </div>
             ))}
-            {work.tags.length > 0 ? (
-              <p className={styles.tags}>
-                {work.tags.map((t) => (
-                  <a key={t.slug} href={pageHref(basePath, { tag: t.slug }, "grid")}>
-                    {t.name}
-                  </a>
-                ))}
-              </p>
-            ) : null}
           </section>
 
           <div className={styles.media}>

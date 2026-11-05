@@ -3,7 +3,7 @@ import type { PublicWork } from "@senka/core";
 import { firstSentence, neighbours, parseView, workNumber, yearRange } from "../src/lib/meta";
 
 const work = (slug: string, year?: string): PublicWork => ({
-  slug, title: slug, tags: [], media: [], cover: null, updatedAt: "",
+  slug, title: slug, facets: { medium: [], project: [], content: [], exhibition: [] }, media: [], cover: null, updatedAt: "",
   details: year ? [{ key: "year", label: "Year", value: year, type: "text" }] : [],
 });
 
