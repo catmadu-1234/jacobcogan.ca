@@ -5,7 +5,9 @@
 //   pnpm seed:demo
 //
 // Safe to run again: it replaces only the sample works (ids 9001-9099) and leaves everything else alone.
-// The artwork is drawn by scripts/lib/demo-art.mjs and cached in .wrangler/demo-art, so re-runs are quick.
+// The pictures are real photographs from picsum.photos (fixed ids, so they never change) cached in .wrangler/demo-art,
+// so re-runs are quick and work offline. If a photo cannot be fetched, scripts/lib/demo-art.mjs draws one instead.
+//   pnpm seed:demo -- --generated   always draw them instead
 
 import { execFileSync } from "node:child_process";
 import { createRequire } from "node:module";
@@ -13,7 +15,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 import sharp from "sharp";
-import { STYLE_INFO, artSpec, renderArtPng } from "./lib/demo-art.mjs";
+import { STYLE_INFO, artSpec, renderArtPng, dimensionsFor } from "./lib/demo-art.mjs";
 
 if (process.argv.includes("--remote")) {
   console.error("Demo seed is local-only.");
@@ -23,7 +25,21 @@ if (process.argv.includes("--remote")) {
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const stateDir = path.join(root, ".wrangler", "state");
 const artDir = path.join(root, ".wrangler", "demo-art");
-const ART_VERSION = 2; // bump when demo-art.mjs changes how pictures look, to redraw the cached ones
+const ART_VERSION = 3; // bump when the pictures change, to refetch or redraw the cached ones
+const GENERATED_ONLY = process.argv.includes("--generated");
+// Picsum photo ids, picked for landscapes, architecture and still life. One per work, so no two works share a picture.
+const PHOTO_IDS = [1015, 1036, 1043, 1018, 1039, 1048, 1067, 1040, 1033, 1051, 1056, 1069, 1076, 1078, 164, 217, 274, 292];
+
+/** A real photograph cropped to the given shape, or null when offline. */
+async function fetchPhoto(id, { width, height }) {
+  try {
+    const res = await fetch(`https://picsum.photos/id/${id}/${width}/${height}.jpg`, { redirect: "follow", signal: AbortSignal.timeout(20000) });
+    if (!res.ok) return null;
+    return Buffer.from(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
 const LONG_EDGE = 2000;
 
 // 1. Make sure the local database has its tables and the two sites.
@@ -77,7 +93,9 @@ async function artwork(siteIndex, workIndex) {
   const metaFile = path.join(dir, "meta.json");
   if (!existsSync(metaFile)) {
     mkdirSync(dir, { recursive: true });
-    const png = await renderArtPng(spec, LONG_EDGE);
+    const photo = GENERATED_ONLY ? null : await fetchPhoto(PHOTO_IDS[(siteIndex * 9 + workIndex) % PHOTO_IDS.length], dimensionsFor(spec.ratio, LONG_EDGE));
+    if (!photo && !GENERATED_ONLY) console.warn(`Could not fetch photo for ${siteIndex}-${workIndex}; drawing one instead.`);
+    const png = photo ?? (await renderArtPng(spec, LONG_EDGE));
     const { width, height } = await sharp(png).metadata();
     const { dominant } = await sharp(png).stats();
     const variants = ["original"];

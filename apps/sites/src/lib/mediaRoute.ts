@@ -20,7 +20,12 @@ function etagMatches(header: string | null, etag: string): boolean {
  * Serves one stored file, but only if the work it belongs to is visible and the upload finished. Files are
  * addressed by immutable keys, so browsers may cache them for a year. Supports byte ranges for video seeking.
  */
-export async function handleMediaRequest(env: MediaEnv, request: Request, key: string): Promise<Response> {
+export async function handleMediaRequest(
+  env: MediaEnv,
+  request: Request,
+  key: string,
+  cacheControl = "public, max-age=31536000, immutable",
+): Promise<Response> {
   const match = KEY.exec(key);
   if (!match) return notFound();
   const [, siteId, mediaId, variant] = match as unknown as [string, string, string, MediaVariant];
@@ -34,7 +39,7 @@ export async function handleMediaRequest(env: MediaEnv, request: Request, key: s
   const headers = new Headers({
     "Content-Type": head.httpMetadata?.contentType ?? "application/octet-stream",
     "Accept-Ranges": "bytes",
-    "Cache-Control": "public, max-age=31536000, immutable",
+    "Cache-Control": cacheControl,
     "X-Content-Type-Options": "nosniff",
     "Access-Control-Allow-Origin": "*",
     ETag: head.httpEtag,

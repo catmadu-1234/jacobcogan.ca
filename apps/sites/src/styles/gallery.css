@@ -82,11 +82,22 @@ html.filtering::view-transition-group(*) {
   animation-duration: 620ms;
   animation-timing-function: cubic-bezier(0.22, 0.8, 0.2, 1);
 }
-html.filtering::view-transition-old(.tile) {
+/* A tile that stays is the same picture before and after, so it only glides: no fade, or it would blink. */
+html.filtering::view-transition-old(.tile),
+html.filtering::view-transition-new(.tile) {
+  height: 100%;
+  object-fit: cover;
+}
+html.filtering::view-transition-old(.tile):only-child {
   animation: tile-out 260ms var(--ease) both;
 }
-html.filtering::view-transition-new(.tile) {
+html.filtering::view-transition-new(.tile):only-child {
   animation: tile-in 520ms 160ms var(--ease) both;
+}
+/* Scroll-linked reveals would fight the transition (a tile caught mid-reveal is faint, then pops), so once
+   the visitor filters, tiles stay put. */
+[data-gallery][data-filtered] [data-work] {
+  animation: none;
 }
 @keyframes tile-out {
   to {

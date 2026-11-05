@@ -68,12 +68,28 @@ if (gallery && rail) {
     }
   }
 
-  function go(filters: Filters, push: boolean) {
+  // Tiles that were filtered out may never have loaded their (lazy) picture; a tile that arrives blank flashes.
+  // Load and decode the ones about to appear before the transition takes its "after" snapshot.
+  async function warm(filters: Filters) {
+    const pending: Promise<unknown>[] = [];
+    items.forEach((el, i) => {
+      if (!el.hidden || !matches(facets[i]!, filters)) return;
+      for (const img of el.querySelectorAll("img")) {
+        img.loading = "eager";
+        pending.push(img.decode().catch(() => {}));
+      }
+    });
+    await Promise.race([Promise.all(pending), new Promise((done) => setTimeout(done, 600))]);
+  }
+
+  async function go(filters: Filters, push: boolean) {
+    gallery!.dataset.filtered = "";
     const run = () => {
       apply(filters);
       if (push) history.pushState(null, "", pageHref(base, filters, view));
     };
     if (!document.startViewTransition || reduceMotion.matches) return run();
+    await warm(filters);
     document.documentElement.classList.add("filtering");
     const transition = document.startViewTransition(run);
     transition.finished.finally(() => document.documentElement.classList.remove("filtering"));
