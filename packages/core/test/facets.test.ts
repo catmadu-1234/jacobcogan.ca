@@ -1,6 +1,6 @@
 import { env } from "cloudflare:test";
 import { describe, expect, it } from "vitest";
-import { WorkPatch, facetsForWork, listFacetValues, setWorkFacets, softDeleteWork } from "../src";
+import { WorkPatch, facetsForWork, listFacetValues, renameFacetValue, setWorkFacets, softDeleteWork } from "../src";
 import { addWork } from "./fixtures";
 import { seedTwoSites } from "./fixtures";
 
@@ -74,5 +74,42 @@ describe("WorkPatch year", () => {
   });
   it("rejects anything that is not exactly four digits", () => {
     for (const bad of ["24", "c. 2019", "Spring 2021", "20245", "2024-25"]) expect(patch(bad).success, bad).toBe(false);
+  });
+});
+
+describe("renameFacetValue", () => {
+  it("renames a value for every work that uses it", async () => {
+    const { a } = await seedTwoSites(db());
+    const one = await addWork(db(), a, { title: "One", facets: { medium: ["Oli"] } });
+    const two = await addWork(db(), a, { title: "Two", facets: { medium: ["Oli", "Ink"] } });
+    const [oli] = (await listFacetValues(db(), a)).medium.filter((v) => v.name === "Oli");
+    const renamed = await renameFacetValue(db(), a, oli!.id, "Oil");
+    expect(renamed).toMatchObject({ name: "Oil", slug: "oil" });
+    expect(names((await facetsForWork(db(), one.work.id)).medium)).toEqual(["Oil"]);
+    expect(names((await facetsForWork(db(), two.work.id)).medium)).toEqual(["Ink", "Oil"]);
+  });
+
+  it("merges into an existing value of the same facet and keeps every work attached", async () => {
+    const { a } = await seedTwoSites(db());
+    const one = await addWork(db(), a, { title: "One", facets: { medium: ["Oli"] } });
+    const two = await addWork(db(), a, { title: "Two", facets: { medium: ["Oil"] } });
+    const [oli] = (await listFacetValues(db(), a)).medium.filter((v) => v.name === "Oli");
+    const kept = await renameFacetValue(db(), a, oli!.id, "oil");
+    expect(kept!.name).toBe("Oil");
+    expect(names((await facetsForWork(db(), one.work.id)).medium)).toEqual(["Oil"]);
+    const all = (await listFacetValues(db(), a)).medium;
+    expect(all.map((v) => [v.name, v.count])).toEqual([["Oil", 2]]);
+    expect(two.work.id).toBeGreaterThan(0);
+  });
+
+  it("does not merge across facets, and ignores another site's value", async () => {
+    const { a, b } = await seedTwoSites(db());
+    await addWork(db(), a, { title: "One", facets: { medium: ["Dogs"], content: ["Hounds"] } });
+    const hounds = (await listFacetValues(db(), a)).content[0]!;
+    await renameFacetValue(db(), a, hounds.id, "Dogs");
+    const all = await listFacetValues(db(), a);
+    expect(names(all.medium)).toEqual(["Dogs"]);
+    expect(names(all.content)).toEqual(["Dogs"]);
+    expect(await renameFacetValue(db(), b, hounds.id, "x")).toBeNull();
   });
 });

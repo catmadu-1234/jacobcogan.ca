@@ -6,6 +6,7 @@ import { mergeSitePatch, type SitePatch } from "../lib/sitePatch";
 import { useStore } from "../lib/store";
 import type { Site } from "@senka/core/types";
 import { SaveIndicator } from "../components/SaveIndicator";
+import { CatalogueSection } from "./settings/CatalogueSection";
 import { AboutSection } from "./settings/AboutSection";
 import { DetailsSection } from "./settings/DetailsSection";
 import { LookSection } from "./settings/LookSection";
@@ -35,6 +36,7 @@ export function Settings() {
       </a>
 
       <DetailsSection />
+      <CatalogueSection />
       <LookSection theme={site.theme} onPatch={(p) => autosave.queue(p)} />
       <AboutSection name={site.name} about={site.about} links={site.links} onPatch={(p) => autosave.queue(p)} />
       <StorageSection usedBytes={me.storageBytes} />
