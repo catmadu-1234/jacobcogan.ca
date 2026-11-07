@@ -113,6 +113,17 @@ After this, every change that lands on `main` is checked, tested and published o
 
 Pull requests run the checks only. Merging to `main` also applies database changes, then publishes the admin and the sites.
 
+## A domain in someone else's Cloudflare account
+
+A Worker can only serve a domain from its own Cloudflare account, and a domain is billed to the account that holds
+it. When an artist owns her domain in her own account (Senka: `senkas.studio`), deploy `apps/forwarder` there: it
+passes visits to the portfolio and sends the visitor's address along in `x-forwarded-host`, which the portfolio's
+routing honours (`apps/sites/src/lib/routing.ts`). Also store the domain on her site:
+
+```bash
+pnpm --filter admin exec wrangler d1 execute senka-db --remote --command "UPDATE sites SET hostname='senkas.studio' WHERE slug='site-b'"
+```
+
 ## Catalogue facets (one-off data move)
 
 Migration `0003_facets.sql` adds the Medium, Project, Content and Exhibition vocabularies. After it is applied to a

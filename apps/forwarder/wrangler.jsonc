@@ -1,0 +1,13 @@
+{
+  // A tiny Worker that puts Senka's portfolio on her own domain. It runs in HER Cloudflare account (the one that
+  // holds senkas.studio) and passes each visit through to the portfolio, telling it which address the visitor used.
+  "name": "senka-forwarder",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "senkas.studio", "custom_domain": true },
+    { "pattern": "www.senkas.studio", "custom_domain": true }
+  ],
+  "vars": { "ORIGIN": "https://senka-sites.jake-cogan.workers.dev" }
+}
