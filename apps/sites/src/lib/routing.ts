@@ -25,14 +25,27 @@ export interface RoutingArgs {
  * its internal route (/<slug>/...). Astro runs the middleware again on the rewritten request, with the same
  * `locals`, so that second pass must change nothing: rewriting again would loop forever.
  */
+/** The domain a forwarder says the visitor used, or null. Only a plain hostname is accepted. */
+export function forwardedHost(request: Request): string | null {
+  const value = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim().toLowerCase();
+  return value && value.length <= 253 && /^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/.test(value) ? value : null;
+}
+
 export async function routePage(a: RoutingArgs): Promise<Response> {
   const { request, locals } = a;
   if (locals.rewritten) return a.next();
 
   locals.basePath = "";
-  // Astro swaps its request for the internal route after a rewrite; keep the address the visitor used.
-  locals.publicUrl ??= request.url;
   const url = new URL(request.url);
+  // A forwarder on the owner's own domain (see apps/forwarder) passes the address the visitor typed.
+  const forwarded = forwardedHost(request);
+  if (forwarded) {
+    url.protocol = "https:";
+    url.port = "";
+    url.hostname = forwarded;
+  }
+  // Astro swaps its request for the internal route after a rewrite; keep the address the visitor used.
+  locals.publicUrl ??= url.toString();
 
   // `www.` of a site's own domain sends visitors to the bare domain, so the portfolio has one address.
   if (url.hostname.startsWith("www.")) {
@@ -55,5 +68,6 @@ export async function routePage(a: RoutingArgs): Promise<Response> {
     locals.rewritten = true;
     return a.rewrite(target + url.search);
   };
-  return withVersionCache(a.cache, request, resolved.site, a.ctx, render, a.buildId);
+  // Pages are cached under the address the visitor used, since they contain absolute URLs.
+  return withVersionCache(a.cache, forwarded ? new Request(url, request) : request, resolved.site, a.ctx, render, a.buildId);
 }

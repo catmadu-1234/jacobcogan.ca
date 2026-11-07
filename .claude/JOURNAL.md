@@ -1,5 +1,9 @@
 # Journal — senka
 
+## 2026-11-05 19:50 EST (branch: feat/senka-cms)
+I'm not clear on what you're asking—do you mean the portfolio site built with this CMS, or the name of an artist using it? From the transcript I see `jacobcogan.ca` is live, but I don't have explicit info on what Senka's portfolio domain or name is. What are you looking for?
+
+
 ## 2026-11-05 18:26 EST (branch: feat/senka-cms)
 - Updated test fixtures and filter tests across sites package for new facet data shape
 - Fixed UI test suite to build works from facets instead of old details model

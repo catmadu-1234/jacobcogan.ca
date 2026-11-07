@@ -15,9 +15,9 @@ function harness() {
   } as unknown as Cache;
   const pending: Promise<unknown>[] = [];
 
-  async function run(url: string, opts: { withCache?: boolean; localsOverride?: RoutingLocals } = {}): Promise<Response> {
+  async function run(url: string, opts: { withCache?: boolean; localsOverride?: RoutingLocals; headers?: Record<string, string> } = {}): Promise<Response> {
     return routePage({
-      request: new Request(url),
+      request: new Request(url, { headers: opts.headers }),
       locals: opts.localsOverride ?? locals,
       env,
       cache: opts.withCache ? cache : undefined,
@@ -33,6 +33,46 @@ function harness() {
   }
   return { run, calls, locals, puts, settle: () => Promise.all(pending) };
 }
+
+describe("routePage behind a forwarder", () => {
+  const via = (host: string) => ({ headers: { "x-forwarded-host": host } });
+
+  it("serves the site that owns the forwarded domain, keeping the visitor's address", async () => {
+    await seedSites();
+    const h = harness();
+    await h.run("https://senka-sites.example.workers.dev/work/blue-hour?x=1", via("art.example.com"));
+    expect(h.calls.rewrites).toEqual(["/site-b/work/blue-hour?x=1"]);
+    expect(h.locals.site!.slug).toBe("site-b");
+    expect(h.locals.basePath).toBe("");
+    expect(h.locals.publicUrl).toBe("https://art.example.com/work/blue-hour?x=1");
+  });
+
+  it("redirects the forwarded www. address to the bare domain", async () => {
+    await seedSites();
+    const res = await harness().run("https://senka-sites.example.workers.dev/studio", via("www.art.example.com"));
+    expect(res.status).toBe(301);
+    expect(res.headers.get("location")).toBe("https://art.example.com/studio");
+  });
+
+  it("caches pages under the visitor's address, not the forwarder's", async () => {
+    await seedSites();
+    const h = harness();
+    await h.run("https://senka-sites.example.workers.dev/", { ...via("art.example.com"), withCache: true });
+    await h.settle();
+    expect(h.puts.length).toBeGreaterThan(0);
+    expect(h.puts.every((u) => u.includes("/art.example.com/"))).toBe(true);
+  });
+
+  it("ignores a forwarded value that is not a plain hostname", async () => {
+    await seedSites();
+    for (const bad of ["art.example.com/evil", "art example.com", "-x.com"]) {
+      const h = harness();
+      await h.run("https://senka-sites.example.workers.dev/site-a", via(bad));
+      expect(h.locals.site!.slug, bad).toBe("site-a");
+      expect(h.locals.basePath, bad).toBe("/site-a");
+    }
+  });
+});
 
 describe("routePage on www", () => {
   it("redirects www. of a site's domain to the bare domain, keeping path and query", async () => {
